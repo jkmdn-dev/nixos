@@ -1,0 +1,104 @@
+{
+  "nodes": {
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1706981411,
+        "narHash": "sha256-cLbLPTL1CDmETVh4p0nQtvoF+FSEjsnJTFpTxhXywhQ=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "652fda4ca6dafeb090943422c34ae9145787af37",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "release-23.11",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "my-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1709677744,
+        "narHash": "sha256-bAJLDwFBfCXmwxoDIC1liieZkzM5Ukijv1/w+FzU/vg=",
+        "owner": "JoakimPaulsson",
+        "repo": "nix-neovim-build",
+        "rev": "f572679c9bb505494a8c3df37f5f391a64e7336d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "JoakimPaulsson",
+        "repo": "nix-neovim-build",
+        "type": "github"
+      }
+    },
+    "neovim-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1709053065,
+        "narHash": "sha256-OXDwO+KMN9Jn8gGQJILJfzd+8QOo9H/1PRvQ7xuNqCA=",
+        "ref": "refs/heads/master",
+        "rev": "8a41128b7ca840a601b4e20271efd567d20fd035",
+        "revCount": 181,
+        "type": "git",
+        "url": "file:///etc/nixos/neovim-config"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///etc/nixos/neovim-config"
+      }
+    },
+    "nh": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1709714234,
+        "narHash": "sha256-fnuVQqdK48c66EC4mL8t7uLhwsY6JDyn7H5tjRpx9Sg=",
+        "owner": "viperML",
+        "repo": "nh",
+        "rev": "3f148b0c7f2d56be65dc55628f6b2e68ee10e231",
+        "type": "github"
+      },
+      "original": {
+        "owner": "viperML",
+        "repo": "nh",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1708979614,
+        "narHash": "sha256-FWLWmYojIg6TeqxSnHkKpHu5SGnFP5um1uUjH+wRV6g=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "b7ee09cf5614b02d289cd86fcfa6f24d4e078c2a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-23.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "my-nvim": "my-nvim",
+        "neovim-config": "neovim-config",
+        "nh": "nh",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
