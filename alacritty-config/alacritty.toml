@@ -5,4 +5,5 @@ program = "zsh"
 args = ["-l", "-c", "tmux new-sesstion -A -s main"]
 
 [env]
+TERM = "xterm-256color"
 ZDOTDIR = "/var/config/zsh"

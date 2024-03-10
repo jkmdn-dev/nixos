@@ -16,15 +16,23 @@ fi
 
 source "${ZDOTDIR}/zsh-autocomplete/zsh-autocomplete.plugin.zsh"
 
+# make tab cycle through suggestions
+bindkey '\t' menu-select "$terminfo[kcbt]" menu-select
+bindkey -M menuselect '\t' menu-complete "$terminfo[kcbt]" reverse-menu-complete
+
+# make enter accept the current suggestion
+bindkey -M menuselect '\r' .accept-line
 
 # ------------------------------------------------------------------------------
-# color setup
+# zsh-syntax-highlighting setup
 # ------------------------------------------------------------------------------
 
-# if [ -f ~/.dir_colors ]; then
-#   eval $(dircolors $HOME/.dir_colors)
-# fi
+if [[ ! -d "${ZDOTDIR}/fast-syntax-highlighting" ]]; then
+  git clone --depth 1 -- https://github.com/zdharma-continuum/fast-syntax-highlighting "${ZDOTDIR}/fast-syntax-highlighting"
+fi
 
+source "${ZDOTDIR}/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+fast-theme base16 &> /dev/null
 
 # ------------------------------------------------------------------------------
 # powerlevel10k setup
@@ -37,22 +45,5 @@ fi
 source "${ZDOTDIR}/.p10k.zsh"
 
 source "${ZDOTDIR}/powerlevel10k/powerlevel10k.zsh-theme"
-
-# ------------------------------------------------------------------------------
-# zoxide setup 
-# ------------------------------------------------------------------------------
-
-# source "${ZDOTDIR}/zoxide.zsh"
-# eval "$(zoxide init zsh)"
-
-
-# ------------------------------------------------------------------------------
-# mise setup 
-# ------------------------------------------------------------------------------
-
-# eval "$(~/.local/bin/mise activate zsh)"
-# mise use -g node@latest &>/dev/null
-# mise use -g python@latest &>/dev/null
-# mise use -g bun@latest &>/dev/null
 
 export CLICOLOR=1

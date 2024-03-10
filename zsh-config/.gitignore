@@ -4,4 +4,5 @@
 ls
 powerlevel10k
 zsh-autocomplete
+fast-syntax-highlighting
 zsh-defer
