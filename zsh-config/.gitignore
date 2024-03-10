@@ -1,0 +1,7 @@
+.zhistory
+.zcompdump
+.zpm
+ls
+powerlevel10k
+zsh-autocomplete
+zsh-defer

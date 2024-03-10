@@ -2,17 +2,18 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, unstablePkgs, ... }:
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
-  
+
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -82,7 +83,7 @@
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+  services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.joakimp = {
@@ -91,12 +92,18 @@
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
       firefox
-      zsh
-    #  thunderbird
+      #  thunderbird
     ];
   };
   users.defaultUserShell = pkgs.zsh;
-  programs.zsh.enable = true;
+  programs.zsh = {
+    enable = true;
+    interactiveShellInit = 
+    ''
+      export ZDOTDIR=/var/config/zsh
+    '';
+  };
+
 
   # Enable automatic login for the user.
   services.xserver.displayManager.autoLogin.enable = true;
@@ -111,13 +118,28 @@
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wget
-  	gnome.gnome-tweaks
-	zsh
-  ];
-  environment.shells = with pkgs; [ zsh ]; 
+  environment = {
+    systemPackages = with pkgs; [
+      gnome.gnome-tweaks
+      unstablePkgs.alacritty
+      zsh
+    ];
+    shells = with pkgs; [ zsh ];
+    sessionVariables = {
+      XDG_CACHE_HOME = "/var/cache";
+      XDG_CONFIG_HOME = "/var/config";
+      XDG_DATA_HOME = "/var/data";
+      XDG_STATE_HOME = "/var/state";
+      ZDOTDIR = "/var/config/zsh";
+    };
+    variables = {
+      XDG_CACHE_HOME = "/var/cache";
+      XDG_CONFIG_HOME = "/var/config";
+      XDG_DATA_HOME = "/var/data";
+      XDG_STATE_HOME = "/var/state";
+      ZDOTDIR = "/var/config/zsh";
+    };
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -144,6 +166,41 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system = {
+    stateVersion = "23.11"; # Did you read the comment?
+    activationScripts = { 
+      myStart = 
+        ''
+          if [ ! -d /var/cache ]; then
+            mkdir -p /var/cache
+          fi
+
+          if [ ! -d /var/config ]; then
+            mkdir -p /var/config
+          fi
+
+          if [ ! -d /var/data ]; then
+            mkdir -p /var/data
+          fi
+
+          if [ ! -d /var/state ]; then
+            mkdir -p /var/state
+          fi
+
+          if [ ! -L /var/config/nvim ]; then
+            ln -s /etc/nixos/neovim-config /var/config/nvim
+          fi
+
+          if [ ! -L /var/config/alacritty ]; then
+            ln -s /etc/nixos/alacritty-config /var/config/alacritty
+          fi
+
+          if [ ! -L /var/config/zsh ]; then
+            ln -s /etc/nixos/zsh-config /var/config/zsh
+          fi
+          export ZDOTDIR=/var/config/zsh
+        '';
+    };
+  };
 
 }

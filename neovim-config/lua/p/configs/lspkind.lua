@@ -1,9 +1,9 @@
 return function ()
-	local lspkind = require("lspkind")
+  local lspkind = require("lspkind")
 
-	lspkind.init({
-	  symbol_map = {
-	    Copilot = "",
-	  },
-	})
+  lspkind.init({
+    symbol_map = {
+      Copilot = "",
+    },
+  })
 end
