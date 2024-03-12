@@ -3,12 +3,13 @@
 
   inputs = {
     # Nix packagers	
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
-    unstable.url = "nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Home manager
-    home-manager.url = "github:nix-community/home-manager/release-23.11";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     nh = {
       url = "github:viperML/nh";
@@ -24,10 +25,12 @@
       url = "github:peterldowns/nix-search-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+  
+    hyprland.url = "github:hyprwm/Hyprland";
 
   };
 
-  outputs = inputs @ { self, nixpkgs, unstable, home-manager, nh, nix-search-cli, ... }:
+  outputs = inputs @ { self, nixpkgs, home-manager, nh, nix-search-cli, hyprland, ... }:
     let
       system = "x86_64-linux";
       config = {
@@ -39,23 +42,21 @@
       pkgs = import nixpkgs {
         inherit system config overlays;
       };
-      unstablePkgs = import unstable {
-        inherit system config overlays;
+      specialArgs = {
+        inherit hyprland nh;
       };
     in
     {
       nixosConfigurations = {
         joakimp = nixpkgs.lib.nixosSystem {
-          inherit system pkgs;
+          inherit system pkgs specialArgs;
           modules = [
             ./configuration.nix
+            hyprland.nixosModules.default
             home-manager.nixosModules.home-manager
             {
-              _module.args = { inherit unstablePkgs; };
-            }
-            {
               home-manager = {
-                extraSpecialArgs = { inherit nh unstablePkgs; };
+                extraSpecialArgs = specialArgs; 
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 users.joakimp = import ./home.nix;

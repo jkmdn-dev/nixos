@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, unstablePkgs, ... }:
+{ pkgs, ... }:
 
 {
   imports =
@@ -12,7 +12,11 @@
     ];
 
   # Enable flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings = { 
+    experimental-features = [ "nix-command" "flakes" ];
+    substituters = ["https://hyprland.cachix.org"];
+    trusted-public-keys = ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
+  };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -50,13 +54,13 @@
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  # services.xserver.displayManager.gdm.enable = true;
+  # services.xserver.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
-  services.xserver = {
+  services.xserver.xkb = {
     layout = "se";
-    xkbVariant = "";
+    variant = "";
   };
 
   # Configure console keymap
@@ -96,18 +100,21 @@
     ];
   };
   users.defaultUserShell = pkgs.zsh;
-  programs.zsh = {
-    enable = true;
-    interactiveShellInit = 
-    ''
-      export ZDOTDIR=/var/config/zsh
-    '';
+  programs = {
+    zsh = {
+      enable = true;
+      interactiveShellInit =
+        ''
+          export ZDOTDIR=/var/config/zsh
+        '';
+    };
+    dconf.enable = true;
   };
 
 
   # Enable automatic login for the user.
-  services.xserver.displayManager.autoLogin.enable = true;
-  services.xserver.displayManager.autoLogin.user = "joakimp";
+  # services.xserver.displayManager.autoLogin.enable = true;
+  # services.xserver.displayManager.autoLogin.user = "joakimp";
 
   # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
   systemd.services."getty@tty1".enable = false;
@@ -121,7 +128,7 @@
   environment = {
     systemPackages = with pkgs; [
       gnome.gnome-tweaks
-      unstablePkgs.alacritty
+      alacritty
       zsh
     ];
     shells = with pkgs; [ zsh ];
@@ -168,8 +175,8 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system = {
     stateVersion = "23.11"; # Did you read the comment?
-    activationScripts = { 
-      myStart = 
+    activationScripts = {
+      myStart =
         ''
           if [ ! -d /var/cache ]; then
             mkdir -p /var/cache
@@ -198,6 +205,19 @@
           if [ ! -L /var/config/zsh ]; then
             ln -s /etc/nixos/zsh-config /var/config/zsh
           fi
+
+          if [ ! -L /var/config/hypr ]; then
+            ln -s /home/joakimp/.config/hypr /var/config
+          fi
+
+          if [ ! -L /var/config/gtk-3.0/ ]; then
+            ln -s /home/joakimp/.config/gtk-3.0 /var/config
+          fi
+
+          if [ ! -L /var/config/gtk-4.0/ ]; then
+            ln -s /home/joakimp/.config/gtk-4.0 /var/config
+          fi
+
           export ZDOTDIR=/var/config/zsh
         '';
     };
