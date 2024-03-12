@@ -143,13 +143,23 @@
           bind -r l select-pane -R
         '';
     };
-
+    
+    ssh = {
+      enable = true;
+      addKeysToAgent = "yes";
+    };
 
     git = {
       enable = true;
       # why is this not working?
       userName = "Joakim Paulsson";
       userEmail = "joakim.jp.paulsson@gmail.com";
+    };
+  };
+
+  services = {
+    ssh-agent = {
+      enable = true;
     };
   };
 

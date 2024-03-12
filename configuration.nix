@@ -130,6 +130,7 @@
       gnome.gnome-tweaks
       alacritty
       zsh
+      brightnessctl
     ];
     shells = with pkgs; [ zsh ];
     sessionVariables = {
@@ -210,11 +211,11 @@
             ln -s /home/joakimp/.config/hypr /var/config
           fi
 
-          if [ ! -L /var/config/gtk-3.0/ ]; then
+          if [ ! -L /var/config/gtk-3.0 ]; then
             ln -s /home/joakimp/.config/gtk-3.0 /var/config
           fi
 
-          if [ ! -L /var/config/gtk-4.0/ ]; then
+          if [ ! -L /var/config/gtk-4.0 ]; then
             ln -s /home/joakimp/.config/gtk-4.0 /var/config
           fi
 
