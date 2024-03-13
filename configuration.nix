@@ -56,6 +56,15 @@
   # Enable the GNOME Desktop Environment.
   # services.xserver.displayManager.gdm.enable = true;
   # services.xserver.desktopManager.gnome.enable = true;
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd Hyprland";
+        user = "greeter";
+      };
+    };
+  };
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -103,10 +112,6 @@
   programs = {
     zsh = {
       enable = true;
-      interactiveShellInit =
-        ''
-          export ZDOTDIR=/var/config/zsh
-        '';
     };
     dconf.enable = true;
   };
@@ -128,25 +133,22 @@
   environment = {
     systemPackages = with pkgs; [
       gnome.gnome-tweaks
-      alacritty
-      zsh
       brightnessctl
     ];
-    shells = with pkgs; [ zsh ];
-    sessionVariables = {
-      XDG_CACHE_HOME = "/var/cache";
-      XDG_CONFIG_HOME = "/var/config";
-      XDG_DATA_HOME = "/var/data";
-      XDG_STATE_HOME = "/var/state";
-      ZDOTDIR = "/var/config/zsh";
-    };
-    variables = {
-      XDG_CACHE_HOME = "/var/cache";
-      XDG_CONFIG_HOME = "/var/config";
-      XDG_DATA_HOME = "/var/data";
-      XDG_STATE_HOME = "/var/state";
-      ZDOTDIR = "/var/config/zsh";
-    };
+    # sessionVariables = {
+    #   XDG_CACHE_HOME = "/var/cache";
+    #   XDG_CONFIG_HOME = "/var/config";
+    #   XDG_DATA_HOME = "/var/data";
+    #   XDG_STATE_HOME = "/var/state";
+    #   ZDOTDIR = "/var/config/zsh";
+    # };
+    # variables = {
+    #   XDG_CACHE_HOME = "/var/cache";
+    #   XDG_CONFIG_HOME = "/var/config";
+    #   XDG_DATA_HOME = "/var/data";
+    #   XDG_STATE_HOME = "/var/state";
+    #   ZDOTDIR = "/var/config/zsh";
+    # };
   };
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -176,52 +178,52 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system = {
     stateVersion = "23.11"; # Did you read the comment?
-    activationScripts = {
-      myStart =
-        ''
-          if [ ! -d /var/cache ]; then
-            mkdir -p /var/cache
-          fi
-
-          if [ ! -d /var/config ]; then
-            mkdir -p /var/config
-          fi
-
-          if [ ! -d /var/data ]; then
-            mkdir -p /var/data
-          fi
-
-          if [ ! -d /var/state ]; then
-            mkdir -p /var/state
-          fi
-
-          if [ ! -L /var/config/nvim ]; then
-            ln -s /etc/nixos/neovim-config /var/config/nvim
-          fi
-
-          if [ ! -L /var/config/alacritty ]; then
-            ln -s /etc/nixos/alacritty-config /var/config/alacritty
-          fi
-
-          if [ ! -L /var/config/zsh ]; then
-            ln -s /etc/nixos/zsh-config /var/config/zsh
-          fi
-
-          if [ ! -L /var/config/hypr ]; then
-            ln -s /home/joakimp/.config/hypr /var/config
-          fi
-
-          if [ ! -L /var/config/gtk-3.0 ]; then
-            ln -s /home/joakimp/.config/gtk-3.0 /var/config
-          fi
-
-          if [ ! -L /var/config/gtk-4.0 ]; then
-            ln -s /home/joakimp/.config/gtk-4.0 /var/config
-          fi
-
-          export ZDOTDIR=/var/config/zsh
-        '';
-    };
+    # activationScripts = {
+    #   myStart =
+    #     ''
+    #       if [ ! -d /var/cache ]; then
+    #         mkdir -p /var/cache
+    #       fi
+    #
+    #       if [ ! -d /var/config ]; then
+    #         mkdir -p /var/config
+    #       fi
+    #
+    #       if [ ! -d /var/data ]; then
+    #         mkdir -p /var/data
+    #       fi
+    #
+    #       if [ ! -d /var/state ]; then
+    #         mkdir -p /var/state
+    #       fi
+    #
+    #       if [ ! -L /var/config/nvim ]; then
+    #         ln -s /etc/nixos/neovim-config /var/config/nvim
+    #       fi
+    #
+    #       if [ ! -L /var/config/alacritty ]; then
+    #         ln -s /etc/nixos/alacritty-config /var/config/alacritty
+    #       fi
+    #
+    #       if [ ! -L /var/config/zsh ]; then
+    #         ln -s /etc/nixos/zsh-config /var/config/zsh
+    #       fi
+    #
+    #       if [ ! -L /var/config/hypr ]; then
+    #         ln -s /home/joakimp/.config/hypr /var/config
+    #       fi
+    #
+    #       if [ ! -L /var/config/gtk-3.0 ]; then
+    #         ln -s /home/joakimp/.config/gtk-3.0 /var/config
+    #       fi
+    #
+    #       if [ ! -L /var/config/gtk-4.0 ]; then
+    #         ln -s /home/joakimp/.config/gtk-4.0 /var/config
+    #       fi
+    #
+    #       export ZDOTDIR=/var/config/zsh
+    #     '';
+    # };
   };
 
 }

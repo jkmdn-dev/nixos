@@ -1,15 +1,26 @@
-{ pkgs, nh, hyprland, ... }:
+{ config, pkgs, nh, hyprland, ... }:
+let
+	# zsh plugins dl-path
+	p10k = "\${XDG_CACHE_HOME}/powerlevel10";
+	cmp = "\${XDG_CACHE_HOME}/zsh-autocomplete";
+	fsh = "\${XDG_CACHE_HOME}/fast-syntax-highlighting";
+in
 {
   
   imports = [
     hyprland.homeManagerModules.default
   ];
 
-  fonts.fontconfig.enable = true;
-
   home = {
     username = "joakimp";
     homeDirectory = "/home/joakimp";
+
+    file = {
+      ".config" = {
+        source = ./config;
+        recursive = true;
+      };
+    };
 
     packages = with pkgs; [
       # essentials
@@ -46,7 +57,8 @@
       # dashboard
       wtf
 
-      nerdfonts
+      nerdfonts # why is this not working?
+      iosevka
 
       # this is not setup correctly
       nh
@@ -63,20 +75,32 @@
       ]))
       nodejs_21
 
-      #get rid of this in future
+      coreutils
       zig
-      clang
-      rustup
-      cmake
-      pkg-config
 
       # dev
       direnv
     ];
 
+    sessionVariables = {
+      GTK_THEME = "Catppuccin-Mocha-Standard-Mauve-Dark";
+    };
+
+    pointerCursor = {
+      gtk.enable = true;
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Ice";
+    };
+
     stateVersion = "23.11";
   };
   
+  fonts.fontconfig.enable = true;
+
+  xdg = {
+    enable = true;
+  };
+
   gtk = {
     enable = true;
     iconTheme = {
@@ -109,23 +133,73 @@
     };
   };
 
-  home.sessionVariables.GTK_THEME = "Catppuccin-Mocha-Standard-Mauve-Dark";
-  home.pointerCursor.gtk.enable = true;
-  home.pointerCursor.package = pkgs.bibata-cursors;
-  home.pointerCursor.name = "Bibata-Modern-Ice";
 
   programs = {
     home-manager = {
       enable = true;
     };
 
+    zsh = {
+      enable = true;
+      dotDir = ".config/zsh";
+      initExtraFirst =
+        ''
+          if [[ -r "''${XDG_CACHE_HOME}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+            source "''${XDG_CACHE_HOME}/p10k-instant-prompt-''${(%):-%n}.zsh"
+          fi
+
+          if [[ ! -d "${cmp}" ]]; then
+            git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git "${cmp}" 
+          fi
+
+          if [[ ! -d "${fsh}" ]]; then
+            git clone --depth 1 -- https://github.com/zdharma-continuum/fast-syntax-highlighting "${fsh}"
+          fi
+
+          if [[ ! -d "${p10k}" ]]; then
+            git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${p10k}"
+          fi
+
+          source "''${ZDOTDIR}/.p10k.zsh"
+        '';
+
+      initExtra = 
+        ''
+            source "${cmp}/zsh-autocomplete.plugin.zsh"
+            source "${fsh}/fast-syntax-highlighting.plugin.zsh"
+            source "${p10k}/powerlevel10k.zsh-theme"
+
+            # make tab cycle through suggestions
+            bindkey '\t' menu-select "''$terminfo[kcbt]" menu-select
+            bindkey -M menuselect '\t' menu-complete "''$terminfo[kcbt]" reverse-menu-complete
+
+            fast-theme base16 &> /dev/null
+
+            export CLICOLOR=1
+        '';
+    };
+
+    alacritty = {
+      enable = true;
+      settings = {
+        import = ["${config.xdg.configHome}/alacritty/rose-pine.toml"];
+        shell = {
+          program = "zsh";
+          args = ["-l" "-c" "tmux new-session -A -s main"];
+        };
+        env = {
+          TERM = "xterm-256color";
+        };
+      };
+    };
+
     tmux = {
       enable = true;
       extraConfig =
         ''
-          set-option -g default-shell $SHELL
           set -g default-terminal "tmux-256color"
           set -ag terminal-overrides ",xterm-256color:RGB"
+          set-window-option -g mode-keys vi 
 
           # Hide status bar
           set-option -g status off
@@ -161,6 +235,7 @@
     ssh-agent = {
       enable = true;
     };
+
   };
 
   wayland.windowManager.hyprland = {
