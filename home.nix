@@ -196,10 +196,6 @@
       enable = true;
       settings = {
         import = ["${config.xdg.configHome}/alacritty/rose-pine.toml"];
-        shell = {
-          program = "zsh";
-          args = ["-l" "-c" "tmux new-session -A -s main"];
-        };
         env = {
           TERM = "xterm-256color";
         };
@@ -216,8 +212,6 @@
 
           unbind -a
 
-          set -g prefix None
-          set -g prefix2 None
           set -g escape-time 1
           set -g automatic-rename off
           set -g set-titles on
@@ -225,7 +219,7 @@
           set -g history-limit 0
           set -g message-limit 0
           set -g assume-paste-time 0
-          set -ga update-environment ' VTE_VERSION KITTY_LISTEN_ON GUAKE_TAB_UUID NVIM NVIM_LISTEN_ADDRESS VIMRUNTIME VIM _Z4H_LINES _Z4H_COLUMNS _Z4H_ORIG_CWD'
+          set -ga update-environment 'NVIM NVIM_LISTEN_ADDRESS VIMRUNTIME VIM _Z4H_LINES _Z4H_COLUMNS _Z4H_ORIG_CWD'
           set -s set-clipboard on
           set -as terminal-overrides ',*:Ms=\E]52;%p1%s;%p2%s\007'
 
