@@ -1,10 +1,4 @@
 { config, pkgs, nh, hyprland, ... }:
-let
-	# zsh plugins dl-path
-	p10k = "\${XDG_CACHE_HOME}/powerlevel10";
-	cmp = "\${XDG_CACHE_HOME}/zsh-autocomplete";
-	fsh = "\${XDG_CACHE_HOME}/fast-syntax-highlighting";
-in
 {
   
   imports = [
@@ -16,6 +10,7 @@ in
     homeDirectory = "/home/joakimp";
 
     file = {
+      ".zshenv".source = ./.zshenv;
       ".config" = {
         source = ./config;
         recursive = true;
@@ -141,42 +136,60 @@ in
 
     zsh = {
       enable = true;
-      dotDir = ".config/zsh";
-      initExtraFirst =
-        ''
-          if [[ -r "''${XDG_CACHE_HOME}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
-            source "''${XDG_CACHE_HOME}/p10k-instant-prompt-''${(%):-%n}.zsh"
-          fi
-
-          if [[ ! -d "${cmp}" ]]; then
-            git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git "${cmp}" 
-          fi
-
-          if [[ ! -d "${fsh}" ]]; then
-            git clone --depth 1 -- https://github.com/zdharma-continuum/fast-syntax-highlighting "${fsh}"
-          fi
-
-          if [[ ! -d "${p10k}" ]]; then
-            git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${p10k}"
-          fi
-
-          source "''${ZDOTDIR}/.p10k.zsh"
-        '';
-
-      initExtra = 
-        ''
-            source "${cmp}/zsh-autocomplete.plugin.zsh"
-            source "${fsh}/fast-syntax-highlighting.plugin.zsh"
-            source "${p10k}/powerlevel10k.zsh-theme"
-
-            # make tab cycle through suggestions
-            bindkey '\t' menu-select "''$terminfo[kcbt]" menu-select
-            bindkey -M menuselect '\t' menu-complete "''$terminfo[kcbt]" reverse-menu-complete
-
-            fast-theme base16 &> /dev/null
-
-            export CLICOLOR=1
-        '';
+      # completionInit = ""; #zsh-autocomplete handles this
+      # initExtraFirst =
+      #   ''
+      #     if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+      #       source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
+      #     fi
+      #
+      #     if [[ ! -d "${cmp}" ]]; then
+      #       git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git "${cmp}" 
+      #     fi
+      #
+      #     if [[ ! -d "${fsh}" ]]; then
+      #       git clone --depth 1 -- https://github.com/zdharma-continuum/fast-syntax-highlighting "${fsh}"
+      #     fi
+      #
+      #     if [[ ! -d "${p10k}" ]]; then
+      #       git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${p10k}"
+      #     fi
+      #
+      #     if [[ ! -d "${dfr}" ]]; then
+      #       git clone --depth=1 https://github.com/romkatv/zsh-defer.git "${dfr}"
+      #     fi
+      #
+      #     source "''${ZDOTDIR}/.p10k.zsh"
+      #   '';
+      #
+      # initExtra = 
+      #   ''
+      #       # should be first
+      #       source "${dfr}/zsh-defer.plugin.zsh"
+      #
+      #       function cmp () { 
+      #         source "${cmp}/zsh-autocomplete.plugin.zsh"
+      #
+      #         # make tab cycle through suggestions
+      #         bindkey '\t' menu-select "''$terminfo[kcbt]" menu-select
+      #         bindkey -M menuselect '\t' menu-complete "''$terminfo[kcbt]" reverse-menu-complete
+      #       }
+      #
+      #       function fsh () {
+      #         source "${fsh}/fast-syntax-highlighting.plugin.zsh"
+      #
+      #         # don't know if this is needed
+      #         fast-theme base16 &> /dev/null
+      #       }
+      #       
+      #       zsh-defer cmp
+      #       zsh-defer fsh
+      #
+      #       #can't defer this one
+      #       source "${p10k}/powerlevel10k.zsh-theme"
+      #
+      #       export CLICOLOR=1
+      #   '';
     };
 
     alacritty = {
@@ -200,6 +213,21 @@ in
           set -g default-terminal "tmux-256color"
           set -ag terminal-overrides ",xterm-256color:RGB"
           set-window-option -g mode-keys vi 
+
+          unbind -a
+
+          set -g prefix None
+          set -g prefix2 None
+          set -g escape-time 1
+          set -g automatic-rename off
+          set -g set-titles on
+          set -g set-titles-string "#T"
+          set -g history-limit 0
+          set -g message-limit 0
+          set -g assume-paste-time 0
+          set -ga update-environment ' VTE_VERSION KITTY_LISTEN_ON GUAKE_TAB_UUID NVIM NVIM_LISTEN_ADDRESS VIMRUNTIME VIM _Z4H_LINES _Z4H_COLUMNS _Z4H_ORIG_CWD'
+          set -s set-clipboard on
+          set -as terminal-overrides ',*:Ms=\E]52;%p1%s;%p2%s\007'
 
           # Hide status bar
           set-option -g status off
