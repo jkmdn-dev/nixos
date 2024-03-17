@@ -10,7 +10,10 @@
     homeDirectory = "/home/joakimp";
 
     file = {
-      ".zshenv".source = ./.zshenv;
+      ".zshenv"= {
+        source = ./.zshenv;
+        target = ".zshenv";
+      };
       ".config" = {
         source = ./config;
         recursive = true;
@@ -28,14 +31,15 @@
       fzf
       file
       which
-      tree
       gnused
       gnutar
       gawk
       gnupg
+      gnumake
       btop
       wget
       bat
+      eza
 
       # hyprland essentials
       mako
@@ -57,7 +61,8 @@
 
       # this is not setup correctly
       nh
-
+      
+      tmux # handle tmux.conf myself, much easier for now
       neovim
       # nasty hack to get Copilot working
       # find a way to get rid of this
@@ -134,64 +139,6 @@
       enable = true;
     };
 
-    zsh = {
-      enable = true;
-      # completionInit = ""; #zsh-autocomplete handles this
-      # initExtraFirst =
-      #   ''
-      #     if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
-      #       source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
-      #     fi
-      #
-      #     if [[ ! -d "${cmp}" ]]; then
-      #       git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git "${cmp}" 
-      #     fi
-      #
-      #     if [[ ! -d "${fsh}" ]]; then
-      #       git clone --depth 1 -- https://github.com/zdharma-continuum/fast-syntax-highlighting "${fsh}"
-      #     fi
-      #
-      #     if [[ ! -d "${p10k}" ]]; then
-      #       git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${p10k}"
-      #     fi
-      #
-      #     if [[ ! -d "${dfr}" ]]; then
-      #       git clone --depth=1 https://github.com/romkatv/zsh-defer.git "${dfr}"
-      #     fi
-      #
-      #     source "''${ZDOTDIR}/.p10k.zsh"
-      #   '';
-      #
-      # initExtra = 
-      #   ''
-      #       # should be first
-      #       source "${dfr}/zsh-defer.plugin.zsh"
-      #
-      #       function cmp () { 
-      #         source "${cmp}/zsh-autocomplete.plugin.zsh"
-      #
-      #         # make tab cycle through suggestions
-      #         bindkey '\t' menu-select "''$terminfo[kcbt]" menu-select
-      #         bindkey -M menuselect '\t' menu-complete "''$terminfo[kcbt]" reverse-menu-complete
-      #       }
-      #
-      #       function fsh () {
-      #         source "${fsh}/fast-syntax-highlighting.plugin.zsh"
-      #
-      #         # don't know if this is needed
-      #         fast-theme base16 &> /dev/null
-      #       }
-      #       
-      #       zsh-defer cmp
-      #       zsh-defer fsh
-      #
-      #       #can't defer this one
-      #       source "${p10k}/powerlevel10k.zsh-theme"
-      #
-      #       export CLICOLOR=1
-      #   '';
-    };
-
     alacritty = {
       enable = true;
       settings = {
@@ -202,44 +149,6 @@
       };
     };
 
-    tmux = {
-      enable = true;
-      extraConfig =
-        ''
-          set -g default-terminal "tmux-256color"
-          set -ag terminal-overrides ",xterm-256color:RGB"
-          set-window-option -g mode-keys vi 
-
-          unbind -a
-
-          set -g escape-time 1
-          set -g automatic-rename off
-          set -g set-titles on
-          set -g set-titles-string "#T"
-          set -g history-limit 0
-          set -g message-limit 0
-          set -g assume-paste-time 0
-          set -ga update-environment 'NVIM NVIM_LISTEN_ADDRESS VIMRUNTIME VIM _Z4H_LINES _Z4H_COLUMNS _Z4H_ORIG_CWD'
-          set -s set-clipboard on
-          set -as terminal-overrides ',*:Ms=\E]52;%p1%s;%p2%s\007'
-
-          # Hide status bar
-          set-option -g status off
-          bind-key q set-option status
-
-          # Movement and resize vim controls
-          bind -r C-k resize-pane -U
-          bind -r C-j resize-pane -D
-          bind -r C-h resize-pane -L
-          bind -r C-l resize-pane -R
-
-          bind -r k select-pane -U
-          bind -r j select-pane -D
-          bind -r h select-pane -L
-          bind -r l select-pane -R
-        '';
-    };
-    
     ssh = {
       enable = true;
       addKeysToAgent = "yes";
@@ -269,10 +178,14 @@
 
       "$lock" = "swaylock -f --color 1e1e2eFF";
       exec-once = [
-        "alacritty"
+        # "alacritty"
         #"swayidle -w timeout 300 '$lock' timeout 300 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on' before-sleep '$lock'"
         #"mako"
         #"tofi"
+      ];
+
+      exec = [
+        "alacritty"
       ];
 
       ## name: Rosé Pine
@@ -297,6 +210,7 @@
 
       bind = [
         "$mod, d, exec, tofi-drun | xargs hyprctl dispatch exec --"
+        "$mod, t, exec, alacritty"
 
         "$mod, h, movefocus, l"
         "$mod, l, movefocus, r"
