@@ -5,6 +5,7 @@
     hyprland.homeManagerModules.default
   ];
 
+
   home = {
     username = "joakimp";
     homeDirectory = "/home/joakimp";
@@ -40,6 +41,9 @@
       wget
       bat
       eza
+
+      # unfree
+      teams-for-linux
 
       # hyprland essentials
       mako

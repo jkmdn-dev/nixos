@@ -33,18 +33,50 @@
   outputs = inputs @ { self, nixpkgs, home-manager, nh, nix-search-cli, hyprland, ... }:
     let
       system = "x86_64-linux";
+
       config = {
-        allowUnfree = true;
+        hardware = {
+          opengl =
+            let
+              fn = oa: {
+                nativeBuildInputs = oa.nativeBuildInputs ++ [ nixpkgs.glslang ];
+                mesonFlags = oa.mesonFlags ++ [ "-Dvulkan-layers=device-select,overlay" ];
+                postInstall = oa.postInstall + ''
+                    mv $out/lib/libVkLayer* $drivers/lib
+
+                    #Device Select layer
+                    layer=VkLayer_MESA_device_select
+                    substituteInPlace $drivers/share/vulkan/implicit_layer.d/''${layer}.json \
+                      --replace "lib''${layer}" "$drivers/lib/lib''${layer}"
+
+                    #Overlay layer
+                    layer=VkLayer_MESA_overlay
+                    substituteInPlace $drivers/share/vulkan/explicit_layer.d/''${layer}.json \
+                      --replace "lib''${layer}" "$drivers/lib/lib''${layer}"
+                  '';
+              };
+            in
+            with nixpkgs; {
+              enable = true;
+              driSupport32Bit = true;
+              package = (mesa.overrideAttrs fn).drivers;
+              package32 = (pkgsi686Linux.mesa.overrideAttrs fn).drivers;
+            };
+          };
       };
+
       overlays = [
         (final: prev: { neovim = final.callPackage inputs.my-nvim { }; })
       ];
+
       pkgs = import nixpkgs {
         inherit system config overlays;
       };
+
       specialArgs = {
         inherit hyprland nh;
       };
+
     in
     {
       nixosConfigurations = {

@@ -72,6 +72,11 @@
     variant = "";
   };
 
+  services.upower.enable = true;
+  services.dbus = {
+    enable = true;
+  };
+
   # Configure console keymap
   console.keyMap = "sv-latin1";
 
