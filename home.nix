@@ -76,14 +76,23 @@
         python-pkgs.pynvim
         python-pkgs.prompt-toolkit
         python-pkgs.tiktoken
+        python-pkgs.virtualenv
       ]))
       nodejs_21
 
+      # LSP, FMT, and LINT
+      fnlfmt
+      fennel-ls
+      nixfmt
+      nil
+      rustup
+      codespell
+
       coreutils
       zig
+      universal-ctags
+      sqlite
 
-      # dev
-      direnv
     ];
 
     sessionVariables = {
@@ -141,6 +150,11 @@
   programs = {
     home-manager = {
       enable = true;
+    };
+
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
     };
 
     alacritty = {

@@ -23,14 +23,13 @@
 
     nix-search-cli = {
       url = "github:peterldowns/nix-search-cli";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
   
     hyprland.url = "github:hyprwm/Hyprland";
 
   };
 
-  outputs = inputs @ { self, nixpkgs, home-manager, nh, nix-search-cli, hyprland, ... }:
+  outputs = inputs @ { self, nixpkgs, home-manager, nh, hyprland, nix-search-cli, ... }:
     let
       system = "x86_64-linux";
 
@@ -74,7 +73,7 @@
       };
 
       specialArgs = {
-        inherit hyprland nh;
+        inherit hyprland nh nix-search-cli;
       };
 
     in
