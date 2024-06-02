@@ -1,7 +1,6 @@
 (require :general-settings)
 
 (local hotpot [:rktjmp/hotpot.nvim])
-
 (local oil {1 :stevearc/oil.nvim
             :opts {}
             :dependencies [:nvim-tree/nvim-web-devicons]})
@@ -12,6 +11,7 @@
         :config (fn []
                   (let [{: setup} (require :nvim-treesitter.configs)]
                     (setup {:ensure_installed :all
+                            "ignore_install:" [:neorg]
                             :sync_install false
                             :highlight {:enable true}
                             :indent {:enable true}
@@ -41,11 +41,101 @@
                                                  :swap_next {"<c-,>" "@parameter.inner"}
                                                  :swap_previous {"<M-,>" "@parameter.inner"}}}})))})
 
+(local nvim-nu {1 :LhKipp/nvim-nu
+                :build ":TSInstall nu"
+                :dependencies [:nvim-treesitter/nvim-treesitter]
+                :config (fn []
+                          (let [{: setup} (require :nu)]
+                            (setup {:use_lsp_features false})))})
+
 (local guard {1 :nvimdev/guard.nvim :dependencies [:nvimdev/guard-collection]})
 
-(local maincoq {1 :ms-jpq/coq_nvim :branch :coq})
-(local artscoq {1 :ms-jpq/coq.artifacts :branch :artifacts})
-(local thrpcoq {1 :ms-jpq/coq.thirdparty :branch :3p})
+(local luasnip {1 :L3MON4D3/LuaSnip
+                :version :v2.2
+                :build "make install_jsregexp"})
+
+(local cmp {1 :hrsh7th/nvim-cmp
+            :version false
+            :event [:InsertEnter :CmdlineEnter]
+            :dependencies [:hrsh7th/cmp-nvim-lsp
+                           :hrsh7th/cmp-buffer
+                           :hrsh7th/cmp-path
+                           :hrsh7th/cmp-cmdline
+                           :hrsh7th/cmp-nvim-lsp-document-symbol
+                           :hrsh7th/cmp-nvim-lsp-signature-help
+                           luasnip
+                           :saadparwaiz1/cmp_luasnip
+                           :zjp-CN/nvim-cmp-lsp-rs
+                           {:url "https://codeberg.org/FelipeLema/cmp-async-path.git"}
+                           :lukas-reineke/cmp-rg
+                           :andersevenrud/cmp-tmux
+                           :Saecki/crates.nvim]
+            :config (fn []
+                      (let [{: config} (require :luasnip)
+                            {: setup} config
+                            {: lazy_load} (require :luasnip.loaders.from_vscode)]
+                        (lazy_load)
+                        (setup))
+                      (let [{: setup : mapping : config : ConfirmBehavior} (require :cmp)
+                            {: preset
+                             : scroll_docs
+                             : complete
+                             : abort
+                             : confirm
+                             : select_next_item
+                             : select_prev_item} mapping
+                            {: Replace} ConfirmBehavior
+                            {: insert} preset
+                            {: sources} config
+                            {: cmdline} setup
+                            {: locally_jumpable
+                             : jump
+                             : expand_or_locally_jumpable
+                             : expand_or_jump} (require :luasnip)
+                            cmdline-src1 (sources [{:name :buffer}])
+                            cmdline-src2 (sources [{:name :async_path}
+                                                   {:name :cmdline}])
+                            completion {:completeopt "menu,menuone,noinsert"}
+                            snippet {:expand (fn [{: body}]
+                                               (let [{: lsp_expand} (require :luasnip)]
+                                                 (lsp_expand body)))}
+                            mapping (insert {:<C-b> (scroll_docs (- 4))
+                                             :<C-f> (scroll_docs 4)
+                                             :<C-Space> (complete {})
+                                             :<C-e> (abort)
+                                             :<CR> (confirm {:behaviour Replace
+                                                             :select true})
+                                             :<C-n> (select_next_item)
+                                             :<C-p> (select_prev_item)
+                                             :<C-l> (mapping (fn []
+                                                               (if (expand_or_locally_jumpable)
+                                                                   (expand_or_jump))))
+                                             :<C-h> (mapping (fn []
+                                                               (if (locally_jumpable (- 1))
+                                                                   (jump (- 1)))))})
+                            sources (sources [{:name :nvim_lsp}
+                                              {:name :nvim_lsp_document_symbol}
+                                              {:name :nvim_lsp_signature_help}
+                                              {:name :luasnip}
+                                              {:name :async_path}
+                                              {:name :rg}
+                                              {:name :tmux}
+                                              {:name :buffer}])
+                            experimental {:ghost_text true}]
+                        (setup {: snippet
+                                : mapping
+                                : sources
+                                : completion
+                                : experimental})
+                        (cmdline "/"
+                                 {:mapping ((. preset :cmdline))
+                                  :sources cmdline-src1})
+                        (cmdline "?"
+                                 {:mapping ((. preset :cmdline))
+                                  :sources cmdline-src1})
+                        (cmdline ":"
+                                 {:mapping ((. preset :cmdline))
+                                  :sources cmdline-src2})))})
 
 (local ultautopair {1 :altermo/ultimate-autopair.nvim
                     :envet [:InsertEnter :CmdlineEnter]
@@ -82,6 +172,8 @@
 
 (local lsp [:neovim/nvim-lspconfig])
 
+(local codeactionpreview [:aznhe21/actions-preview.nvim])
+
 (local surround
        {1 :kylechui/nvim-surround
         :config (fn []
@@ -101,23 +193,75 @@
                                  :component_separators "|"
                                  :section_separators ""}}})
 
+(local autosave
+       {1 :pocco81/auto-save.nvim
+        :config (fn []
+                  (let [{: setup} (require :auto-save)]
+                    (setup {:trigger_events [:QuitPre]
+                            :condition (fn [buf]
+                                         (let [{: getbufvar} vim.fn]
+                                           (if (and (= (getbufvar buf
+                                                                  :&modifiable)
+                                                       1)
+                                                    (getbufvar buf :&filetype))
+                                               true
+                                               false)))})))})
+
+(local copilot
+       {1 :zbirenbaum/copilot.lua
+        :cmd :Copilot
+        :event :InsertEnter
+        :config (fn []
+                  (let [{: setup} (require :copilot)]
+                    (setup {:panel {:enabled true
+                                    :auto_refresh false
+                                    :keymap {:jump_prev :<c-space><c-p>
+                                             :jump_next :<c-space><c-n>
+                                             :accept :<c-space><c-space>
+                                             :refresh :<c-space>cr
+                                             :open :<c-space>co}
+                                    :layout {:position :bottom :ratio 0.4}}
+                            :suggestion {:enabled true
+                                         :auto_trigger false
+                                         :debounce 75
+                                         :keymap {:accept :<c-space><c-y>
+                                                  :accept_word :<c-space><c-w>
+                                                  :accept_line :<c-space><c-l>
+                                                  :next :<c-space><c-n>
+                                                  :prev :<c-space><c-n>
+                                                  :dismiss :<c-space><c-d>}}
+                            :filetypes {:yaml false
+                                        :markdown false
+                                        :help false
+                                        :gitcommit false
+                                        :gitrebase false
+                                        :hgcommit false
+                                        :svn false
+                                        :cvs false}
+                            :copilot_node_command :node})))})
+
+(local glow {1 :ellisonleao/glow.nvim :config true :cmd :Glow})
+
 (let [{: setup} (require :lazy)]
   (setup [hotpot
           oil
           treesitter
+          nvim-nu
           guard
-          maincoq
-          artscoq
-          thrpcoq
+          cmp
           ultautopair
           theme
           which-key
           telescope
           lsp
+          codeactionpreview
           surround
           blankline
           com
-          lualine])
+          lualine
+          autosave
+          glow
+          copilot])
   {})
 
 (fn wkregister [tbl]
@@ -153,9 +297,6 @@
          (fn []
            (eval-buffer (vim.api.nvim_get_current_buf)))))
 
-(let [{: Now} (require :coq)]
-  (Now))
-
 ;; diagnostics are not LSP dependent
 (let [{: open_float : goto_next : goto_prev} vim.diagnostic]
   (register-keymap [:d
@@ -178,10 +319,9 @@
          : type_definition
          : references
          : signature_help
-         : rename
-         : code_action} vim.lsp.buf]
+         : rename} vim.lsp.buf]
     (register-keymap [""
-                      "[L]SP"
+                      :LSP
                       :g
                       hover
                       "[H]over"
@@ -205,17 +345,17 @@
                       "[S]ignature Help"
                       :rn
                       rename
-                      "[R]e-[N]ame"
-                      :a
-                      code_action
-                      "[C]ode Action"] :g)
+                      "[R]e-[N]ame"] :g)
     (if additional?
         (register-keymap additional?))))
 
+(local capabilities (let [{: default_capabilities} (require :cmp_nvim_lsp)]
+                      (default_capabilities)))
+
 (fn setup-lsp [{: lsp : config}]
   (let [{: setup} (. (require :lspconfig) lsp)
-        {: lsp_ensure_capabilities} (require :coq)]
-    (setup (lsp_ensure_capabilities config))))
+        {: on_attach : settings} config]
+    (setup {: on_attach : settings : capabilities})))
 
 (setup-lsp {:lsp :fennel_ls
             :config {:settings {:fennel-ls {:extra-globals :vim}}
@@ -226,6 +366,21 @@
                                                      (fn []
                                                        (hp-eval-buff))
                                                      "Eval [B]uffer"]))}})
+
+(setup-lsp {:lsp :rust_analyzer
+            :config {:on_attach (fn []
+                                  (vim.lsp.inlay_hint.enable 0)
+                                  (make-lsp-keymaps))}})
+
+(setup-lsp {:lsp :nil_ls
+            :config {:on_attach (fn []
+                                  (vim.lsp.inlay_hint.enable 0)
+                                  (make-lsp-keymaps))}})
+
+(setup-lsp {:lsp :nushell
+            :config {:on_attach (fn []
+                                  (vim.lsp.inlay_hint.enable 0)
+                                  (make-lsp-keymaps))}})
 
 (let [{: setup : load_extension} (require :telescope)
       builtin (require :telescope.builtin)
@@ -272,17 +427,32 @@
                       "[R]esume"])
     (register-keymap [:g "[G]it" :f git_files "[F]iles"])))
 
+(let [{: setup : code_actions} (require :actions-preview)
+      layout_config {:width 0.8
+                     :height 0.9
+                     :prompt_position :top
+                     :preview_cutoff 20
+                     :preview_height (fn [_a _b max_lines] (- max_lines 15))}
+      telescope {:sorting_strategy :ascending
+                 :layout_strategy :vertical
+                 : layout_config}]
+  (setup {: telescope})
+  (register-keymap ["" :LSP :a code_actions "Code [A]ctions"] :g))
+
 (let [{: setup} (require :guard)
       {: do_fmt} (require :guard.format)
+      filename (vim.api.nvim_buf_get_name 0)
       ft (require :guard.filetype)]
   (-> (ft :fennel)
       (: :fmt :fnlfmt))
   (-> (ft :nix)
       (: :fmt :nixfmt))
+  (-> (ft :nu)
+      (: :fmt :lsp))
   (-> (ft :rust)
-      (: :fmt :rustfmt))
-      (-> (ft "*")
-          (: :lint :codespell))
-      (setup {:fmt_on_save false :lsp_as_default_formatter false})
-      (register-keymap [:a "[A]ction" :f do_fmt "[F]ormat"]))
+      (: :fmt {:cmd :cargo :args [:fmt "--" :--emit :stdout :-q] :stdin false}))
+  (-> (ft "*")
+      (: :lint :codespell))
+  (setup {:fmt_on_save false :lsp_as_default_formatter false})
+  (register-keymap [:a "[A]ction" :f do_fmt "[F]ormat"]))
 

@@ -1,17 +1,13 @@
-{ config, pkgs, nh, hyprland, ... }:
-{
-  
-  imports = [
-    hyprland.homeManagerModules.default
-  ];
+{ config, pkgs, nh, hyprland, ... }: {
 
+  imports = [ hyprland.homeManagerModules.default ];
 
   home = {
     username = "joakimp";
     homeDirectory = "/home/joakimp";
 
     file = {
-      ".zshenv"= {
+      ".zshenv" = {
         source = ./.zshenv;
         target = ".zshenv";
       };
@@ -60,12 +56,13 @@
       # dashboard
       wtf
 
-      nerdfonts # why is this not working?
-      iosevka
+      nerdfonts
+      cascadia-code
+      babelstone-han
 
       # this is not setup correctly
       nh
-      
+
       tmux # handle tmux.conf myself, much easier for now
       neovim
       # nasty hack to get Copilot working
@@ -85,19 +82,21 @@
       fennel-ls
       nixfmt
       nil
-      rustup
       codespell
+
+      # markdown
+      glow
+
+      pandoc
+      tectonic
 
       coreutils
       zig
       universal-ctags
       sqlite
-
     ];
 
-    sessionVariables = {
-      GTK_THEME = "Catppuccin-Mocha-Standard-Mauve-Dark";
-    };
+    sessionVariables = { GTK_THEME = "Catppuccin-Mocha-Standard-Mauve-Dark"; };
 
     pointerCursor = {
       gtk.enable = true;
@@ -107,12 +106,10 @@
 
     stateVersion = "23.11";
   };
-  
+
   fonts.fontconfig.enable = true;
 
-  xdg = {
-    enable = true;
-  };
+  xdg = { enable = true; };
 
   gtk = {
     enable = true;
@@ -127,9 +124,9 @@
     theme = {
       name = "Catppuccin-Mocha-Standard-Mauve-Dark";
       package = pkgs.catppuccin-gtk.override {
-        accents = ["mauve"];
+        accents = [ "mauve" ];
         size = "standard";
-        tweaks = ["black"];
+        tweaks = [ "black" ];
         variant = "mocha";
       };
     };
@@ -146,24 +143,21 @@
     };
   };
 
-
   programs = {
-    home-manager = {
-      enable = true;
-    };
+    home-manager = { enable = true; };
 
     direnv = {
       enable = true;
       nix-direnv.enable = true;
+      enableNushellIntegration = true;
     };
 
     alacritty = {
       enable = true;
       settings = {
-        import = ["${config.xdg.configHome}/alacritty/rose-pine.toml"];
-        env = {
-          TERM = "xterm-256color";
-        };
+        import = [ "${config.xdg.configHome}/alacritty/rose-pine.toml" ];
+        env = { TERM = "xterm-256color"; };
+        font = { normal = { family = "Cascadia Code"; }; };
       };
     };
 
@@ -178,17 +172,18 @@
       userName = "Joakim Paulsson";
       userEmail = "joakim.jp.paulsson@gmail.com";
     };
+
+    chromium.enable = true;
+
   };
 
   services = {
-    ssh-agent = {
-      enable = true;
-    };
+    ssh-agent = { enable = true; };
 
   };
 
   wayland.windowManager.hyprland = {
-    enable = true; 
+    enable = true;
 
     settings = {
       "monitor" = "eDP-1,1920x1080@60,auto,1";
@@ -202,9 +197,7 @@
         #"tofi"
       ];
 
-      exec = [
-        "alacritty"
-      ];
+      exec = [ "alacritty" ];
 
       ## name: Rosé Pine
       ## author: jishnurajendran
@@ -271,11 +264,9 @@
         "border_size" = "2";
         "col.active_border" = "$subtle";
         "col.inactive_border" = "$muted";
-      }; 
-
-      animations = {
-        "enabled" = "no";
       };
+
+      animations = { "enabled" = "no"; };
 
       misc = {
         "disable_hyprland_logo" = "true";
@@ -283,8 +274,8 @@
         "force_default_wallpaper" = "0";
         "disable_autoreload" = "true";
 
-       # "key_press_enables_dpms" = "true";
-       # "mouse_move_enables_dpms" = "true";
+        # "key_press_enables_dpms" = "true";
+        # "mouse_move_enables_dpms" = "true";
       };
 
     };

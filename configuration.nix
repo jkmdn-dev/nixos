@@ -109,11 +109,12 @@
     description = "Joakim Paulsson";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
+      nushell
       firefox
       #  thunderbird
     ];
   };
-  users.defaultUserShell = pkgs.zsh;
+  users.defaultUserShell = pkgs.nushell;
   programs = {
     zsh = {
       enable = true;
