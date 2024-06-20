@@ -278,6 +278,13 @@
     (if prefix? (wkregister {prefix? tbl})
         (wkregister {grp tbl :prefix :<leader>}))))
 
+(let [{: snake-to-camel : capitalize} (require :functions)]
+  (wkregister {:m {:name "[M]odify selection"
+                   :s [(fn [] (snake-to-camel)) "[S]nake to camel"]
+                   :c [(fn [] (capitalize)) "[C]apitalize"]}
+                   :mode [:v :n]
+                   }))
+
 (let [{: setup : open : close : open_float} (require :oil)]
   (setup {:view_options {:show_hidden true}})
   (register-keymap [:o
@@ -441,7 +448,6 @@
 
 (let [{: setup} (require :guard)
       {: do_fmt} (require :guard.format)
-      filename (vim.api.nvim_buf_get_name 0)
       ft (require :guard.filetype)]
   (-> (ft :fennel)
       (: :fmt :fnlfmt))
@@ -450,7 +456,7 @@
   (-> (ft :nu)
       (: :fmt :lsp))
   (-> (ft :rust)
-      (: :fmt {:cmd :cargo :args [:fmt "--" :--emit :stdout :-q] :stdin false}))
+      (: :fmt {:cmd :rustfmt :args [:--emit :stdout :-q]}))
   (-> (ft "*")
       (: :lint :codespell))
   (setup {:fmt_on_save false :lsp_as_default_formatter false})

@@ -38,6 +38,9 @@
       bat
       eza
 
+      # some programs
+      chromium
+
       # unfree
       teams-for-linux
 
@@ -83,6 +86,9 @@
       nixfmt
       nil
       codespell
+
+      # shell completion
+      carapace
 
       # markdown
       glow
@@ -222,6 +228,7 @@
       bind = [
         "$mod, d, exec, tofi-drun | xargs hyprctl dispatch exec --"
         "$mod, t, exec, alacritty"
+        "$mod, q, killactive,"
 
         "$mod, h, movefocus, l"
         "$mod, l, movefocus, r"
