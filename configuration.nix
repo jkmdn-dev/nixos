@@ -5,17 +5,17 @@
 { pkgs, ... }:
 
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   # Enable flakes
-  nix.settings = { 
+  nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
-    substituters = ["https://hyprland.cachix.org"];
-    trusted-public-keys = ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
+    substituters = [ "https://hyprland.cachix.org" ];
+    trusted-public-keys =
+      [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
   };
 
   # Bootloader.
@@ -72,10 +72,11 @@
     variant = "";
   };
 
+  # needed for quickemu
+  services.spice-vdagentd.enable = true;
+
   services.upower.enable = true;
-  services.dbus = {
-    enable = true;
-  };
+  services.dbus = { enable = true; };
 
   # Configure console keymap
   console.keyMap = "sv-latin1";
@@ -116,12 +117,9 @@
   };
   users.defaultUserShell = pkgs.nushell;
   programs = {
-    zsh = {
-      enable = true;
-    };
+    zsh = { enable = true; };
     dconf.enable = true;
   };
-
 
   # Enable automatic login for the user.
   # services.xserver.displayManager.autoLogin.enable = true;
@@ -137,10 +135,7 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment = {
-    systemPackages = with pkgs; [
-      gnome.gnome-tweaks
-      brightnessctl
-    ];
+    systemPackages = with pkgs; [ gnome.gnome-tweaks brightnessctl ];
   };
 
   # Some programs need SUID wrappers, can be configured further or are

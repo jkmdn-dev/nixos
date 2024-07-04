@@ -38,6 +38,9 @@
       bat
       eza
 
+      # terminal file manager
+      yazi
+
       # some programs
       chromium
 
@@ -66,19 +69,21 @@
       # this is not setup correctly
       nh
 
-      tmux # handle tmux.conf myself, much easier for now
       neovim
+
+      tmux # handle tmux.conf myself, much easier for now
+      # neovim
       # nasty hack to get Copilot working
       # find a way to get rid of this
-      (python3.withPackages (python-pkgs: [
-        python-pkgs.python-dotenv
-        python-pkgs.requests
-        python-pkgs.pynvim
-        python-pkgs.prompt-toolkit
-        python-pkgs.tiktoken
-        python-pkgs.virtualenv
-      ]))
-      nodejs_21
+      # (python3.withPackages (python-pkgs: [
+      #   python-pkgs.python-dotenv
+      #   python-pkgs.requests
+      #   python-pkgs.pynvim
+      #   python-pkgs.prompt-toolkit
+      #   python-pkgs.tiktoken
+      #   python-pkgs.virtualenv
+      # ]))
+      # nodejs_21
 
       # LSP, FMT, and LINT
       fnlfmt
@@ -148,7 +153,6 @@
       '';
     };
   };
-
   programs = {
     home-manager = { enable = true; };
 
@@ -185,7 +189,6 @@
 
   services = {
     ssh-agent = { enable = true; };
-
   };
 
   wayland.windowManager.hyprland = {

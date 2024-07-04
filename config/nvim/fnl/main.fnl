@@ -93,8 +93,7 @@
                              : expand_or_locally_jumpable
                              : expand_or_jump} (require :luasnip)
                             cmdline-src1 (sources [{:name :buffer}])
-                            cmdline-src2 (sources [{:name :async_path}
-                                                   {:name :cmdline}])
+                            cmdline-src2 (sources [{:name :cmdline}])
                             completion {:completeopt "menu,menuone,noinsert"}
                             snippet {:expand (fn [{: body}]
                                                (let [{: lsp_expand} (require :luasnip)]
@@ -117,7 +116,6 @@
                                               {:name :nvim_lsp_document_symbol}
                                               {:name :nvim_lsp_signature_help}
                                               {:name :luasnip}
-                                              {:name :async_path}
                                               {:name :rg}
                                               {:name :tmux}
                                               {:name :buffer}])
@@ -207,40 +205,47 @@
                                                true
                                                false)))})))})
 
-(local copilot
-       {1 :zbirenbaum/copilot.lua
-        :cmd :Copilot
-        :event :InsertEnter
-        :config (fn []
-                  (let [{: setup} (require :copilot)]
-                    (setup {:panel {:enabled true
-                                    :auto_refresh false
-                                    :keymap {:jump_prev :<c-space><c-p>
-                                             :jump_next :<c-space><c-n>
-                                             :accept :<c-space><c-space>
-                                             :refresh :<c-space>cr
-                                             :open :<c-space>co}
-                                    :layout {:position :bottom :ratio 0.4}}
-                            :suggestion {:enabled true
-                                         :auto_trigger false
-                                         :debounce 75
-                                         :keymap {:accept :<c-space><c-y>
-                                                  :accept_word :<c-space><c-w>
-                                                  :accept_line :<c-space><c-l>
-                                                  :next :<c-space><c-n>
-                                                  :prev :<c-space><c-n>
-                                                  :dismiss :<c-space><c-d>}}
-                            :filetypes {:yaml false
-                                        :markdown false
-                                        :help false
-                                        :gitcommit false
-                                        :gitrebase false
-                                        :hgcommit false
-                                        :svn false
-                                        :cvs false}
-                            :copilot_node_command :node})))})
+; (local copilot
+;        {1 :zbirenbaum/copilot.lua
+;         :cmd :Copilot
+;         :event :InsertEnter
+;         :config (fn []
+;                   (let [{: setup} (require :copilot)]
+;                     (setup {:panel {:enabled true
+;                                     :auto_refresh false
+;                                     :keymap {:jump_prev :<c-space><c-p>
+;                                              :jump_next :<c-space><c-n>
+;                                              :accept :<c-space><c-space>
+;                                              :refresh :<c-space>cr
+;                                              :open :<c-space>co}
+;                                     :layout {:position :bottom :ratio 0.4}}
+;                             :suggestion {:enabled true
+;                                          :auto_trigger false
+;                                          :debounce 75
+;                                          :keymap {:accept :<c-space><c-y>
+;                                                   :accept_word :<c-space><c-w>
+;                                                   :accept_line :<c-space><c-l>
+;                                                   :next :<c-space><c-n>
+;                                                   :prev :<c-space><c-n>
+;                                                   :dismiss :<c-space><c-d>}}
+;                             :filetypes {:yaml false
+;                                         :markdown false
+;                                         :help false
+;                                         :gitcommit false
+;                                         :gitrebase false
+;                                         :hgcommit false
+;                                         :svn false
+;                                         :cvs false}
+;                             :copilot_node_command :node})))})
 
 (local glow {1 :ellisonleao/glow.nvim :config true :cmd :Glow})
+
+(local licences {1 "https://git.sr.ht/~reggie/licenses.nvim"
+                 :config (fn []
+                           (let [{: setup} (require :licenses)]
+                             (setup {:copyright_holder "Joakim Paulsson"
+                                     :email "jkmdn@proton.me"
+                                     :licence :MIT})))})
 
 (let [{: setup} (require :lazy)]
   (setup [hotpot
@@ -260,8 +265,9 @@
           com
           lualine
           autosave
+          ; copilot
           glow
-          copilot])
+          licences])
   {})
 
 (fn wkregister [tbl]
@@ -282,8 +288,7 @@
   (wkregister {:m {:name "[M]odify selection"
                    :s [(fn [] (snake-to-camel)) "[S]nake to camel"]
                    :c [(fn [] (capitalize)) "[C]apitalize"]}
-                   :mode [:v :n]
-                   }))
+               :mode [:v :n]}))
 
 (let [{: setup : open : close : open_float} (require :oil)]
   (setup {:view_options {:show_hidden true}})
@@ -379,6 +384,11 @@
                                   (vim.lsp.inlay_hint.enable 0)
                                   (make-lsp-keymaps))}})
 
+(setup-lsp {:lsp :zls
+            :config {:on_attach (fn []
+                                  (vim.lsp.inlay_hint.enable 0)
+                                  (make-lsp-keymaps))}})
+
 (setup-lsp {:lsp :nil_ls
             :config {:on_attach (fn []
                                   (vim.lsp.inlay_hint.enable 0)
@@ -457,6 +467,7 @@
       (: :fmt :lsp))
   (-> (ft :rust)
       (: :fmt {:cmd :rustfmt :args [:--emit :stdout :-q]}))
+  (-> (ft :zig))
   (-> (ft "*")
       (: :lint :codespell))
   (setup {:fmt_on_save false :lsp_as_default_formatter false})

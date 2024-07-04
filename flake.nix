@@ -21,6 +21,8 @@
       flake = false;
     };
 
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+
     nix-search-cli = {
       url = "github:peterldowns/nix-search-cli";
     };
@@ -29,7 +31,7 @@
 
   };
 
-  outputs = inputs @ { self, nixpkgs, home-manager, nh, hyprland, nix-search-cli, ... }:
+  outputs = inputs @ { self, nixpkgs, home-manager, nh, hyprland, nix-search-cli, neovim-nightly-overlay, ... }:
     let
       system = "x86_64-linux";
 
@@ -66,10 +68,15 @@
 
       overlays = [
         (final: prev: { neovim = final.callPackage inputs.my-nvim { }; })
+        # inputs.neovim-nightly-overlay.overlays.default
       ];
 
       pkgs = import nixpkgs {
         inherit system config overlays;
+      };
+
+      pkgsWSL = import nixpkgs {
+        inherit system overlays;
       };
 
       specialArgs = {
@@ -79,6 +86,22 @@
     in
     {
       nixosConfigurations = {
+        joakimp-wsl = nixpkgs.lib.nixosSystem {
+          inherit system;
+          pkgs = pkgsWSL;
+          modules = [
+            ./configurationWSL.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users.joakimp = import ./home-joakimp-wsl.nix;
+              };
+            }
+          ];
+        };
+      
         joakimp = nixpkgs.lib.nixosSystem {
           inherit system pkgs specialArgs;
           modules = [
@@ -90,7 +113,7 @@
                 extraSpecialArgs = specialArgs; 
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users.joakimp = import ./home.nix;
+                users.joakimp = import ./home-joakimp.nix;
               };
             }
           ];
