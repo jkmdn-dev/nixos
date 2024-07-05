@@ -33,6 +33,9 @@
       bat
       eza
 
+      nushell
+      oh-my-posh
+
       # terminal file manager
       yazi
 
@@ -48,10 +51,6 @@
       tmux # handle tmux.conf myself, much easier for now
 
       # LSP, FMT, and LINT
-      fnlfmt
-      fennel-ls
-      nixfmt
-      nil
       codespell
 
       # shell completion

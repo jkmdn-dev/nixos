@@ -23,47 +23,45 @@
 
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
-    nix-search-cli = {
-      url = "github:peterldowns/nix-search-cli";
-    };
-  
+    nix-search-cli = { url = "github:peterldowns/nix-search-cli"; };
+
     hyprland.url = "github:hyprwm/Hyprland";
 
   };
 
-  outputs = inputs @ { self, nixpkgs, home-manager, nh, hyprland, nix-search-cli, neovim-nightly-overlay, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, nh, hyprland, nix-search-cli
+    , neovim-nightly-overlay, ... }:
     let
       system = "x86_64-linux";
 
       config = {
         hardware = {
-          opengl =
-            let
-              fn = oa: {
-                nativeBuildInputs = oa.nativeBuildInputs ++ [ nixpkgs.glslang ];
-                mesonFlags = oa.mesonFlags ++ [ "-Dvulkan-layers=device-select,overlay" ];
-                postInstall = oa.postInstall + ''
-                    mv $out/lib/libVkLayer* $drivers/lib
+          opengl = let
+            fn = oa: {
+              nativeBuildInputs = oa.nativeBuildInputs ++ [ nixpkgs.glslang ];
+              mesonFlags = oa.mesonFlags
+                ++ [ "-Dvulkan-layers=device-select,overlay" ];
+              postInstall = oa.postInstall + ''
+                mv $out/lib/libVkLayer* $drivers/lib
 
-                    #Device Select layer
-                    layer=VkLayer_MESA_device_select
-                    substituteInPlace $drivers/share/vulkan/implicit_layer.d/''${layer}.json \
-                      --replace "lib''${layer}" "$drivers/lib/lib''${layer}"
+                #Device Select layer
+                layer=VkLayer_MESA_device_select
+                substituteInPlace $drivers/share/vulkan/implicit_layer.d/''${layer}.json \
+                  --replace "lib''${layer}" "$drivers/lib/lib''${layer}"
 
-                    #Overlay layer
-                    layer=VkLayer_MESA_overlay
-                    substituteInPlace $drivers/share/vulkan/explicit_layer.d/''${layer}.json \
-                      --replace "lib''${layer}" "$drivers/lib/lib''${layer}"
-                  '';
-              };
-            in
-            with nixpkgs; {
-              enable = true;
-              driSupport32Bit = true;
-              package = (mesa.overrideAttrs fn).drivers;
-              package32 = (pkgsi686Linux.mesa.overrideAttrs fn).drivers;
+                #Overlay layer
+                layer=VkLayer_MESA_overlay
+                substituteInPlace $drivers/share/vulkan/explicit_layer.d/''${layer}.json \
+                  --replace "lib''${layer}" "$drivers/lib/lib''${layer}"
+              '';
             };
+          in with nixpkgs; {
+            enable = true;
+            driSupport32Bit = true;
+            package = (mesa.overrideAttrs fn).drivers;
+            package32 = (pkgsi686Linux.mesa.overrideAttrs fn).drivers;
           };
+        };
       };
 
       overlays = [
@@ -71,20 +69,31 @@
         # inputs.neovim-nightly-overlay.overlays.default
       ];
 
-      pkgs = import nixpkgs {
-        inherit system config overlays;
-      };
+      pkgs = import nixpkgs { inherit system config overlays; };
 
-      pkgsWSL = import nixpkgs {
-        inherit system overlays;
-      };
+      pkgsWSL = import nixpkgs { inherit system overlays; };
 
-      specialArgs = {
-        inherit hyprland nh nix-search-cli;
-      };
+      specialArgs = { inherit hyprland nh nix-search-cli; };
 
-    in
-    {
+      supportedSystems =
+        [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      forEachSupportedSystem = f:
+        nixpkgs.lib.genAttrs supportedSystems
+        (system: f { pkgs = import nixpkgs { inherit system; }; });
+    in {
+
+      devShells = forEachSupportedSystem ({ pkgs }: {
+        default = pkgs.mkShell {
+          packages = with pkgs; [
+            nushell
+            fnlfmt
+            fennel-ls
+            nixfmt
+            nil
+          ];
+        };
+      });
+
       nixosConfigurations = {
         joakimp-wsl = nixpkgs.lib.nixosSystem {
           inherit system;
@@ -101,7 +110,7 @@
             }
           ];
         };
-      
+
         joakimp = nixpkgs.lib.nixosSystem {
           inherit system pkgs specialArgs;
           modules = [
@@ -110,7 +119,7 @@
             home-manager.nixosModules.home-manager
             {
               home-manager = {
-                extraSpecialArgs = specialArgs; 
+                extraSpecialArgs = specialArgs;
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 users.joakimp = import ./home-joakimp.nix;

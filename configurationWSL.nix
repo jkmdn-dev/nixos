@@ -15,7 +15,16 @@
 
   wsl.enable = true;
   wsl.defaultUser = "joakimp";
+
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+  };
   
+  users.defaultUserShell = pkgs.nushell;
+  programs = {
+    zsh = { enable = true; };
+    dconf.enable = true;
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

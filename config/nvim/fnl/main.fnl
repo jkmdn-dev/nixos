@@ -10,7 +10,7 @@
         :build ":TSUpdate"
         :config (fn []
                   (let [{: setup} (require :nvim-treesitter.configs)]
-                    (setup {:ensure_installed :all
+                    (setup {:ensure_installed [:zig :nix :fennel :nushell :lua :c :cpp :rust]
                             "ignore_install:" [:neorg]
                             :sync_install false
                             :highlight {:enable true}
