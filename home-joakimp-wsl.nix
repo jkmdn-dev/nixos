@@ -102,7 +102,7 @@
       enable = true;
       # why is this not working?
       userName = "Joakim Paulsson";
-      userEmail = "joakim.jp.paulsson@gmail.com";
+      userEmail = "jkmdn@proton.me";
     };
 
   };

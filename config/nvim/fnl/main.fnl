@@ -10,7 +10,16 @@
         :build ":TSUpdate"
         :config (fn []
                   (let [{: setup} (require :nvim-treesitter.configs)]
-                    (setup {:ensure_installed [:zig :nix :fennel :nushell :lua :c :cpp :rust]
+                    (setup {:ensure_installed [:zig
+                                               :nix
+                                               :fennel
+                                               :nu
+                                               :lua
+                                               :c
+                                               :cpp
+                                               :rust
+                                               :markdown
+                                               :vimdoc]
                             "ignore_install:" [:neorg]
                             :sync_install false
                             :highlight {:enable true}
@@ -112,13 +121,17 @@
                                              :<C-h> (mapping (fn []
                                                                (if (locally_jumpable (- 1))
                                                                    (jump (- 1)))))})
-                            sources (sources [{:name :nvim_lsp}
-                                              {:name :nvim_lsp_document_symbol}
-                                              {:name :nvim_lsp_signature_help}
-                                              {:name :luasnip}
-                                              {:name :rg}
-                                              {:name :tmux}
-                                              {:name :buffer}])
+                            sources (sources [{:name :nvim_lsp
+                                               :max_item_count 5}
+                                              {:name :luasnip
+                                               :max_item_count 2}
+                                              {:name :nvim_lsp_document_symbol
+                                               :max_item_count 2}
+                                              {:name :nvim_lsp_signature_help
+                                               :max_item_count 2}
+                                              {:name :buffer :max_item_count 2}
+                                              {:name :rg :max_item_count 2}
+                                              {:name :tmux :max_item_count 2}])
                             experimental {:ghost_text true}]
                         (setup {: snippet
                                 : mapping
@@ -247,6 +260,11 @@
                                      :email "jkmdn@proton.me"
                                      :licence :MIT})))})
 
+(local supermaven {1 :supermaven-inc/supermaven-nvim
+                   :config (fn []
+                             (let [{: setup} (require :supermaven-nvim)]
+                               (setup {})))})
+
 (let [{: setup} (require :lazy)]
   (setup [hotpot
           oil
@@ -267,7 +285,8 @@
           autosave
           ; copilot
           glow
-          licences])
+          licences
+          supermaven])
   {})
 
 (fn wkregister [tbl]
