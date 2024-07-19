@@ -27,14 +27,17 @@
 
     hyprland.url = "github:hyprwm/Hyprland";
 
+    nix-gc-env.url = "github:Julow/nix-gc-env";
+
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, nh, hyprland, nix-search-cli
-    , neovim-nightly-overlay, ... }:
+    , neovim-nightly-overlay, nix-gc-env, ... }:
     let
       system = "x86_64-linux";
 
       config = {
+        allowUnfree = true;
         hardware = {
           opengl = let
             fn = oa: {
@@ -73,7 +76,7 @@
 
       pkgsWSL = import nixpkgs { inherit system overlays; };
 
-      specialArgs = { inherit hyprland nh nix-search-cli; };
+      specialArgs = { inherit hyprland nh nix-search-cli nix-gc-env; };
 
       supportedSystems =
         [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
@@ -84,13 +87,7 @@
 
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
-          packages = with pkgs; [
-            nushell
-            fnlfmt
-            fennel-ls
-            nixfmt
-            nil
-          ];
+          packages = with pkgs; [ nushell fnlfmt fennel-ls nixfmt nil ];
         };
       });
 

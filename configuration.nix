@@ -2,20 +2,29 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ pkgs, ... }:
+{ pkgs, nix-gc-env, ... }:
 
 {
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    nix-gc-env.nixosModules.default
   ];
 
   # Enable flakes
-  nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
-    substituters = [ "https://hyprland.cachix.org" ];
-    trusted-public-keys =
-      [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
+  nix = {
+    settings = {
+      experimental-features = [ "nix-command" "flakes" ];
+      substituters = [ "https://hyprland.cachix.org" ];
+      trusted-public-keys = [
+        "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+      ];
+    };
+    gc = {
+      automatic = true;
+      dates = "daily";
+      delete_generations = "+5";
+    };
   };
 
   # Bootloader.
@@ -108,7 +117,15 @@
   users.users.joakimp = {
     isNormalUser = true;
     description = "Joakim Paulsson";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      "qemu-libvirtd"
+      "libvirtd"
+      "wheel"
+      "video"
+      "audio"
+      "disk"
+      "networkmanager"
+    ];
     packages = with pkgs; [
       nushell
       firefox
@@ -156,6 +173,27 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
+
+  virtualisation = {
+    spiceUSBRedirection = { enable = true; };
+    libvirtd = {
+      enable = true;
+      qemu = {
+        package = pkgs.qemu_kvm;
+        runAsRoot = true;
+        swtpm.enable = true;
+        ovmf = {
+          enable = true;
+          packages = [
+            (pkgs.OVMF.override {
+              secureBoot = true;
+              tpmSupport = true;
+            }).fd
+          ];
+        };
+      };
+    };
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

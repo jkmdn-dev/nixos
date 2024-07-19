@@ -43,6 +43,7 @@
 
       # some programs
       chromium
+      vivaldi
 
       # unfree
       teams-for-linux
@@ -180,33 +181,29 @@
       enable = true;
       # why is this not working?
       userName = "Joakim Paulsson";
-      userEmail = "joakim.jp.paulsson@gmail.com";
+      userEmail = "jkmdn@proton.me";
     };
 
     chromium.enable = true;
 
   };
 
-  services = {
-    ssh-agent = { enable = true; };
-  };
+  services = { ssh-agent = { enable = true; }; };
 
   wayland.windowManager.hyprland = {
     enable = true;
 
     settings = {
-      "monitor" = "eDP-1,1920x1080@60,auto,1";
+      "monitor" = [
+        "DP-5,3840x2160@60,0x0,1.5,transform,3"
+        "DP-4,3440x1440@60,1440x640,1"
+        "eDP-1,1920x1080@60,4880x1500,1"
+      ];
       "$mod" = "SUPER";
 
       "$lock" = "swaylock -f --color 1e1e2eFF";
-      exec-once = [
-        # "alacritty"
-        #"swayidle -w timeout 300 '$lock' timeout 300 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on' before-sleep '$lock'"
-        #"mako"
-        #"tofi"
-      ];
 
-      exec = [ "alacritty" ];
+      exec = [ "alacritty" "vivaldi" ];
 
       ## name: Rosé Pine
       ## author: jishnurajendran
@@ -228,9 +225,15 @@
       "$highlightMed" = "0xff403d52";
       "$highlightHigh" = "0xff524f67";
 
+      bindm = [
+        "$mod, mouse:272, movewindow"
+        "$mod, mouse:273, resizewindow"
+      ];
+
       bind = [
         "$mod, d, exec, tofi-drun | xargs hyprctl dispatch exec --"
         "$mod, t, exec, alacritty"
+        "$mod, v, exec, vivaldi"
         "$mod, q, killactive,"
 
         "$mod, h, movefocus, l"
@@ -262,10 +265,10 @@
       ];
 
       input = {
-        "kb_layout" = "se";
+        "kb_layout" = "us,se";
         "kb_variant" = "";
-        "kb_model" = "pc104";
-        "kb_options" = "ctrl:nocaps";
+        "kb_model" = "";
+        "kb_options" = "ctrl:nocaps,grp:win_space_toggle";
       };
 
       general = {
