@@ -152,7 +152,13 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment = {
-    systemPackages = with pkgs; [ gnome.gnome-tweaks brightnessctl ];
+    systemPackages = with pkgs; [
+      gnome.gnome-tweaks
+      brightnessctl
+      wireplumber
+      xdg-desktop-portal-hyprland
+      xdg-desktop-portal-wlr
+    ];
   };
 
   # Some programs need SUID wrappers, can be configured further or are

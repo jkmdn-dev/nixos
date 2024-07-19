@@ -54,6 +54,9 @@
       swaylock
       tofi
       wev # for debugging keybindings
+      wireplumber
+      xdg-desktop-portal-hyprland
+      xdg-desktop-portal-wlr
 
       rose-pine-gtk-theme
       papirus-icon-theme
@@ -72,19 +75,8 @@
 
       neovim
 
-      tmux # handle tmux.conf myself, much easier for now
-      # neovim
-      # nasty hack to get Copilot working
-      # find a way to get rid of this
-      # (python3.withPackages (python-pkgs: [
-      #   python-pkgs.python-dotenv
-      #   python-pkgs.requests
-      #   python-pkgs.pynvim
-      #   python-pkgs.prompt-toolkit
-      #   python-pkgs.tiktoken
-      #   python-pkgs.virtualenv
-      # ]))
-      # nodejs_21
+      # handle tmux.conf myself, much easier for now
+      tmux
 
       # LSP, FMT, and LINT
       fnlfmt
@@ -121,7 +113,16 @@
 
   fonts.fontconfig.enable = true;
 
-  xdg = { enable = true; };
+  xdg = {
+    enable = true;
+    portal = {
+      enable = true;
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-hyprland
+        xdg-desktop-portal-wlr
+      ];
+    };
+  };
 
   gtk = {
     enable = true;
@@ -203,6 +204,9 @@
 
       "$lock" = "swaylock -f --color 1e1e2eFF";
 
+      exec-once = [
+        "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+      ];
       exec = [ "alacritty" "vivaldi" ];
 
       ## name: Rosé Pine
@@ -225,10 +229,7 @@
       "$highlightMed" = "0xff403d52";
       "$highlightHigh" = "0xff524f67";
 
-      bindm = [
-        "$mod, mouse:272, movewindow"
-        "$mod, mouse:273, resizewindow"
-      ];
+      bindm = [ "$mod, mouse:272, movewindow" "$mod, mouse:273, resizewindow" ];
 
       bind = [
         "$mod, d, exec, tofi-drun | xargs hyprctl dispatch exec --"
