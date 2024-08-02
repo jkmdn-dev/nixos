@@ -48,4 +48,4 @@ $current.completions.external = ($current.completions.external
 
 $env.config = $current
     
-nu -c tmux
+nu -c tmux new-session -A -s main

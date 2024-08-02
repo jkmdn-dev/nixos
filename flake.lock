@@ -157,11 +157,11 @@
     "gomod2nix": {
       "inputs": {
         "nixpkgs": [
-          "nix-search-cli",
+          "nix-search-cli-input",
           "nixpkgs"
         ],
         "utils": [
-          "nix-search-cli",
+          "nix-search-cli-input",
           "flake-utils"
         ]
       },
@@ -399,18 +399,18 @@
         "type": "github"
       }
     },
-    "nh": {
+    "nh-input": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1709714234,
-        "narHash": "sha256-fnuVQqdK48c66EC4mL8t7uLhwsY6JDyn7H5tjRpx9Sg=",
+        "lastModified": 1721151247,
+        "narHash": "sha256-m6LmfrUMpt1ZUX3eqB7Gp+ZV6sAWPqkATwZNvA7Bj9U=",
         "owner": "viperML",
         "repo": "nh",
-        "rev": "3f148b0c7f2d56be65dc55628f6b2e68ee10e231",
+        "rev": "168c7ceea2b8d6208cf32de9eb8effa9c008b40d",
         "type": "github"
       },
       "original": {
@@ -434,12 +434,14 @@
         "type": "github"
       }
     },
-    "nix-search-cli": {
+    "nix-search-cli-input": {
       "inputs": {
         "flake-compat": "flake-compat_3",
         "flake-utils": "flake-utils",
         "gomod2nix": "gomod2nix",
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": [
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1694533851,
@@ -489,22 +491,6 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1711001935,
-        "narHash": "sha256-URtGpHue7HHZK0mrHnSf8wJ6OmMKYSsoLmJybrOLFSQ=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "20f77aa09916374aa3141cbc605c955626762c9a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
         "lastModified": 1709961763,
         "narHash": "sha256-6H95HGJHhEZtyYA3rIQpvamMKAGoa8Yh2rFV29QnuGw=",
         "owner": "NixOS",
@@ -525,10 +511,10 @@
         "hyprland": "hyprland",
         "my-nvim": "my-nvim",
         "neovim-nightly-overlay": "neovim-nightly-overlay",
-        "nh": "nh",
+        "nh-input": "nh-input",
         "nix-gc-env": "nix-gc-env",
-        "nix-search-cli": "nix-search-cli",
-        "nixpkgs": "nixpkgs_4"
+        "nix-search-cli-input": "nix-search-cli-input",
+        "nixpkgs": "nixpkgs_3"
       }
     },
     "systems": {

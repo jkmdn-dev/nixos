@@ -8,18 +8,25 @@
 (local treesitter
        {1 :nvim-treesitter/nvim-treesitter
         :build ":TSUpdate"
+        :dependencies [:nvim-treesitter/nvim-treesitter-textobjects
+                       :nvim-treesitter/nvim-treesitter-context]
         :config (fn []
-                  (let [{: setup} (require :nvim-treesitter.configs)]
-                    (setup {:ensure_installed [:zig
-                                               :nix
-                                               :fennel
-                                               :nu
-                                               :lua
-                                               :c
-                                               :cpp
-                                               :rust
-                                               :markdown
-                                               :vimdoc]
+                  (let [{: setup} (require :nvim-treesitter.configs)
+                        parsers [:zig
+                                 :nix
+                                 :fennel
+                                 :nu
+                                 :lua
+                                 :c
+                                 :cpp
+                                 :rust
+                                 :markdown
+                                 :html
+                                 :css
+                                 :javascript
+                                 :typescript
+                                 :vimdoc]]
+                    (setup {:ensure_installed parsers
                             "ignore_install:" [:neorg]
                             :sync_install false
                             :highlight {:enable true}
@@ -27,7 +34,7 @@
                             :incremental_selection {:enable true
                                                     :keymaps {:init_selection :<c-space>
                                                               :node_incremental :<c-space>
-                                                              :node_decremental :<M-space>}}
+                                                              :node_decremental :<c-bs>}}
                             :textobjects {:select {:enable true
                                                    :lookahead true
                                                    :keymaps {:aa "@parameter.outer"
@@ -181,7 +188,7 @@
                   :tag :0.1.6
                   :dependencies [:nvim-lua/plenary.nvim]})
 
-(local lsp [:neovim/nvim-lspconfig])
+(local lsp {1 :neovim/nvim-lspconfig :dependencies [:kevinhwang91/nvim-ufo]})
 
 (local codeactionpreview [:aznhe21/actions-preview.nvim])
 
@@ -218,39 +225,6 @@
                                                true
                                                false)))})))})
 
-; (local copilot
-;        {1 :zbirenbaum/copilot.lua
-;         :cmd :Copilot
-;         :event :InsertEnter
-;         :config (fn []
-;                   (let [{: setup} (require :copilot)]
-;                     (setup {:panel {:enabled true
-;                                     :auto_refresh false
-;                                     :keymap {:jump_prev :<c-space><c-p>
-;                                              :jump_next :<c-space><c-n>
-;                                              :accept :<c-space><c-space>
-;                                              :refresh :<c-space>cr
-;                                              :open :<c-space>co}
-;                                     :layout {:position :bottom :ratio 0.4}}
-;                             :suggestion {:enabled true
-;                                          :auto_trigger false
-;                                          :debounce 75
-;                                          :keymap {:accept :<c-space><c-y>
-;                                                   :accept_word :<c-space><c-w>
-;                                                   :accept_line :<c-space><c-l>
-;                                                   :next :<c-space><c-n>
-;                                                   :prev :<c-space><c-n>
-;                                                   :dismiss :<c-space><c-d>}}
-;                             :filetypes {:yaml false
-;                                         :markdown false
-;                                         :help false
-;                                         :gitcommit false
-;                                         :gitrebase false
-;                                         :hgcommit false
-;                                         :svn false
-;                                         :cvs false}
-;                             :copilot_node_command :node})))})
-
 (local glow {1 :ellisonleao/glow.nvim :config true :cmd :Glow})
 
 (local licences {1 "https://git.sr.ht/~reggie/licenses.nvim"
@@ -264,6 +238,21 @@
                    :config (fn []
                              (let [{: setup} (require :supermaven-nvim)]
                                (setup {})))})
+
+(local ufo
+       {1 :kevinhwang91/nvim-ufo
+        :dependencies [:kevinhwang91/promise-async]
+        :config (fn []
+                  (let [{: o : keymap} vim
+                        km-set (. keymap :set)]
+                    (tset o :foldcolumn :1)
+                    (tset o :foldlevel 99)
+                    (tset o :foldlevelstart 99)
+                    (tset o :foldenable true)
+                    (km-set :n :zM (. (require :ufo) :closeAllFolds))
+                    (km-set :n :zR (. (require :ufo) :openAllFolds))))})
+
+(local fold_line {1 :gh-liu/fold_line.nvim :event :VeryLazy})
 
 (let [{: setup} (require :lazy)]
   (setup [hotpot
@@ -283,10 +272,11 @@
           com
           lualine
           autosave
-          ; copilot
           glow
           licences
-          supermaven])
+          supermaven
+          fold_line
+          ufo])
   {})
 
 (fn wkregister [tbl]
@@ -380,13 +370,19 @@
     (if additional?
         (register-keymap additional?))))
 
-(local capabilities (let [{: default_capabilities} (require :cmp_nvim_lsp)]
-                      (default_capabilities)))
+; (local capabilities (let [{: default_capabilities} (require :cmp_nvim_lsp)]
+;                       (default_capabilities)))
 
 (fn setup-lsp [{: lsp : config}]
   (let [{: setup} (. (require :lspconfig) lsp)
-        {: on_attach : settings} config]
-    (setup {: on_attach : settings : capabilities})))
+        ufo (require :ufo)
+        {: on_attach : settings} config
+        capabilities (let [{: default_capabilities} (require :cmp_nvim_lsp)]
+                       (default_capabilities))]
+    (tset capabilities :textDocument :foldingRange
+          {:dynamicRegistration false :lineFoldingOnly true})
+    (setup {: on_attach : settings : capabilities})
+    ((. ufo :setup))))
 
 (setup-lsp {:lsp :fennel_ls
             :config {:settings {:fennel-ls {:extra-globals :vim}}
@@ -416,6 +412,14 @@
 (setup-lsp {:lsp :nushell
             :config {:on_attach (fn []
                                   (vim.lsp.inlay_hint.enable 0)
+                                  (make-lsp-keymaps))}})
+
+(setup-lsp {:lsp :html
+            :config {:on_attach (fn [] (vim.lsp.inlay_hint.enable 0)
+                                  (make-lsp-keymaps))}})
+
+(setup-lsp {:lsp :tsserver
+            :config {:on_attach (fn [] (vim.lsp.inlay_hint.enable 0)
                                   (make-lsp-keymaps))}})
 
 (let [{: setup : load_extension} (require :telescope)
@@ -487,6 +491,8 @@
   (-> (ft :rust)
       (: :fmt {:cmd :rustfmt :args [:--emit :stdout :-q]}))
   (-> (ft :zig))
+  (-> (ft :html)
+      (: :fmt :prettier))
   (-> (ft "*")
       (: :lint :codespell))
   (setup {:fmt_on_save false :lsp_as_default_formatter false})

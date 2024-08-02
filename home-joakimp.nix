@@ -1,4 +1,4 @@
-{ config, pkgs, nh, hyprland, ... }: {
+{ config, pkgs, nh, nix-search-cli, hyprland, ... }: {
 
   imports = [ hyprland.homeManagerModules.default ];
 
@@ -17,88 +17,86 @@
       };
     };
 
-    packages = with pkgs; [
-      # essentials
-      zip
-      xz
-      unzip
-      p7zip
-      ripgrep
-      jq
-      fzf
-      file
-      which
-      gnused
-      gnutar
-      gawk
-      gnupg
-      gnumake
-      btop
-      wget
-      bat
-      eza
+    packages = with pkgs;
+      [
+        # essentials
+        zip
+        xz
+        unzip
+        p7zip
+        ripgrep
+        jq
+        fzf
+        file
+        which
+        gnused
+        gnutar
+        gawk
+        gnupg
+        gnumake
+        btop
+        wget
+        bat
+        eza
 
-      # terminal file manager
-      yazi
+        # terminal file manager
+        yazi
 
-      # some programs
-      chromium
-      vivaldi
+        # some programs
+        chromium
+        vivaldi
 
-      # unfree
-      teams-for-linux
+        # unfree
+        teams-for-linux
 
-      # hyprland essentials
-      mako
-      swayidle
-      swaylock
-      tofi
-      wev # for debugging keybindings
-      wireplumber
-      xdg-desktop-portal-hyprland
-      xdg-desktop-portal-wlr
+        #webcam
+        libwebcam
 
-      rose-pine-gtk-theme
-      papirus-icon-theme
-      bibata-cursors
-      catppuccin-gtk
+        # hyprland essentials
+        tofi
+        wev # for debugging keybindings
+        wireplumber
+        xdg-desktop-portal-hyprland
+        xdg-desktop-portal-wlr
+        hyprpicker
+        hypridle
+        hyprlock
 
-      # dashboard
-      wtf
+        #themes
+        rose-pine-gtk-theme
+        papirus-icon-theme
+        bibata-cursors
+        catppuccin-gtk
 
-      nerdfonts
-      cascadia-code
-      babelstone-han
+        # fonts
+        nerdfonts
+        cascadia-code
+        babelstone-han
 
-      # this is not setup correctly
-      nh
+        neovim
 
-      neovim
+        # handle tmux.conf myself, much easier for now
+        tmux
 
-      # handle tmux.conf myself, much easier for now
-      tmux
+        # LSP, FMT, and LINT common for all projects
+        codespell
 
-      # LSP, FMT, and LINT
-      fnlfmt
-      fennel-ls
-      nixfmt
-      nil
-      codespell
+        # shell completion
+        carapace
 
-      # shell completion
-      carapace
+        # dev tools
+        gh
 
-      # markdown
-      glow
+        # markdown and docs
+        glow
+        pandoc
+        tectonic
 
-      pandoc
-      tectonic
-
-      coreutils
-      zig
-      universal-ctags
-      sqlite
-    ];
+        coreutils
+        zig
+        universal-ctags
+        sqlite
+      ] ++ [ nh nix-search-cli ];
 
     sessionVariables = { GTK_THEME = "Catppuccin-Mocha-Standard-Mauve-Dark"; };
 
@@ -116,7 +114,7 @@
   xdg = {
     enable = true;
     portal = {
-      enable = true;
+      # enable = true;
       extraPortals = with pkgs; [
         xdg-desktop-portal-hyprland
         xdg-desktop-portal-wlr
@@ -189,23 +187,64 @@
 
   };
 
-  services = { ssh-agent = { enable = true; }; };
+  services = {
+    ssh-agent = { enable = true; };
+    # hypridle = {
+    #   enable = true;
+    #   settings = {
+    #
+    #     general = {
+    #       "lock_cmd" = "pidof hyprlock || hyprlock";
+    #       "before_sleep_cmd" = "loginctl lock-session";
+    #       "after_sleep_cmd" = "hyprctl dispatch dpms on";
+    #     };
+    #
+    #     listener = [
+    #       {
+    #         "timeout" = "150";
+    #         "on-timeout" = "brightnessctl -s set 10";
+    #         "on-resume" = "brightnessctl -r";
+    #       }
+    #       # {
+    #       #   "timeout" = "150";
+    #       #   "on-timeout" = "brightnessctl -sd rgb:kbd_backlight set 0";
+    #       #   "resume" = "brightnessctl -rd rgb:kbd_backlight";
+    #       # }
+    #       {
+    #         "timeout" = "300";
+    #         "on-timeout" = "loginctl lock-session";
+    #       }
+    #       {
+    #         "timeout" = "330";
+    #         "on-timeout" = "hyprctl dispatch dpms off";
+    #         "on-resume" = "hyprctl dispatch dpms on";
+    #       }
+    #
+    #       {
+    #         "timeout" = "1800";
+    #         "on-timeout" = "systemctl suspend";
+    #       }
+    #     ];
+    #   };
+    # };
+  };
 
   wayland.windowManager.hyprland = {
     enable = true;
 
     settings = {
       "monitor" = [
-        "DP-5,3840x2160@60,0x0,1.5,transform,3"
-        "DP-4,3440x1440@60,1440x640,1"
-        "eDP-1,1920x1080@60,4880x1500,1"
+        "DP-5,3840x2160@60,0x0,2,transform,3"
+        "DP-4,3440x1440@60,1080x480,1"
+        "eDP-1,1920x1080@60,4520x1440,1"
       ];
       "$mod" = "SUPER";
 
-      "$lock" = "swaylock -f --color 1e1e2eFF";
+      "$lock" = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd Hyprland";
 
       exec-once = [
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+        "hypridle"
       ];
       exec = [ "alacritty" "vivaldi" ];
 
@@ -263,6 +302,8 @@
 
         "SUPER,Tab,cyclenext,"
         "SUPER,Tab,bringactivetotop,"
+
+        "SUPER?SHIFT+CONTROL, l, exec, loginctl lock-session"
       ];
 
       input = {
@@ -287,11 +328,30 @@
         "disable_splash_rendering" = "true";
         "force_default_wallpaper" = "0";
         "disable_autoreload" = "true";
-
-        # "key_press_enables_dpms" = "true";
-        # "mouse_move_enables_dpms" = "true";
+        "key_press_enables_dpms" = "true";
+        "mouse_move_enables_dpms" = "true";
       };
 
+      # listener = {
+      #     "timeout" = [ 
+      #       "150" 
+      #       "300"
+      #       "330"
+      #       "1800"
+      #     ];
+      #     "on-timeout" = [ 
+      #       "brightnessctl -s set 10"
+      #       "loginctl lock-session"
+      #       "hyprctl dispatch dpms off"
+      #       "systemctl suspend"
+      #     ];
+      #     "on-resume" = [ 
+      #       "brightnessctl -r"
+      #       ""
+      #       "hyprctl dispatch dpms on"
+      #       ""
+      #     ];
+      # };
     };
   };
 }

@@ -153,11 +153,10 @@
   # $ nix search wget
   environment = {
     systemPackages = with pkgs; [
+      acpid
       gnome.gnome-tweaks
       brightnessctl
       wireplumber
-      xdg-desktop-portal-hyprland
-      xdg-desktop-portal-wlr
     ];
   };
 

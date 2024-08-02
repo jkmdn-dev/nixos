@@ -11,11 +11,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nh = {
-      url = "github:viperML/nh";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     my-nvim = {
       url = "github:JoakimPaulsson/nix-neovim-build";
       flake = false;
@@ -23,16 +18,24 @@
 
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
-    nix-search-cli = { url = "github:peterldowns/nix-search-cli"; };
+    nh-input = {
+      url = "github:viperML/nh";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    hyprland.url = "github:hyprwm/Hyprland";
+    nix-search-cli-input = {
+      url = "github:peterldowns/nix-search-cli";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     nix-gc-env.url = "github:Julow/nix-gc-env";
 
+    hyprland.url = "github:hyprwm/Hyprland";
+
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, nh, hyprland, nix-search-cli
-    , neovim-nightly-overlay, nix-gc-env, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, nh-input, hyprland
+    , nix-search-cli-input, neovim-nightly-overlay, nix-gc-env, ... }:
     let
       system = "x86_64-linux";
 
@@ -67,14 +70,15 @@
         };
       };
 
-      overlays = [
-        (final: prev: { neovim = final.callPackage inputs.my-nvim { }; })
-        # inputs.neovim-nightly-overlay.overlays.default
-      ];
+      overlays =
+        [ (final: prev: { neovim = final.callPackage inputs.my-nvim { }; }) ];
 
       pkgs = import nixpkgs { inherit system config overlays; };
 
       pkgsWSL = import nixpkgs { inherit system overlays; };
+
+      nh = nh-input.packages.${system}.default;
+      nix-search-cli = nix-search-cli-input.packages.${system}.default;
 
       specialArgs = { inherit hyprland nh nix-search-cli nix-gc-env; };
 
