@@ -94,14 +94,17 @@
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  sound.enable = true;
+  # sound.enable = true;
   hardware.pulseaudio.enable = false;
+  hardware.graphics.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+    wireplumber.enable = true;
+
     # If you want to use JACK applications, uncomment this
     #jack.enable = true;
 
@@ -111,7 +114,7 @@
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
-  services.xserver.libinput.enable = true;
+  services.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.joakimp = {
@@ -136,6 +139,7 @@
   programs = {
     zsh = { enable = true; };
     dconf.enable = true;
+    hyprland.enable = true;
   };
 
   # Enable automatic login for the user.
@@ -154,11 +158,11 @@
   environment = {
     systemPackages = with pkgs; [
       acpid
-      gnome.gnome-tweaks
+      gnome-tweaks
       brightnessctl
-      wireplumber
     ];
   };
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -180,6 +184,7 @@
   # networking.firewall.enable = false;
 
   virtualisation = {
+    podman.enable = true;
     spiceUSBRedirection = { enable = true; };
     libvirtd = {
       enable = true;

@@ -1,4 +1,13 @@
-{ config, pkgs, nh, nix-search-cli, hyprland, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  nh,
+  nix-search-cli,
+  hyprland,
+  ...
+}:
+{
 
   imports = [ hyprland.homeManagerModules.default ];
 
@@ -17,7 +26,8 @@
       };
     };
 
-    packages = with pkgs;
+    packages =
+      with pkgs;
       [
         # essentials
         zip
@@ -34,15 +44,23 @@
         gawk
         gnupg
         gnumake
+        cmake
         btop
         wget
         bat
         eza
+        inetutils
+
+        # multimedia
+        imv
+        grimblast
+        imagemagick
 
         # terminal file manager
         yazi
 
         # some programs
+        google-chrome
         chromium
         vivaldi
 
@@ -55,12 +73,12 @@
         # hyprland essentials
         tofi
         wev # for debugging keybindings
-        wireplumber
-        xdg-desktop-portal-hyprland
-        xdg-desktop-portal-wlr
         hyprpicker
         hypridle
         hyprlock
+
+        # wayland utils
+        wayland-scanner
 
         #themes
         rose-pine-gtk-theme
@@ -86,6 +104,7 @@
 
         # dev tools
         gh
+        podman
 
         # markdown and docs
         glow
@@ -96,9 +115,15 @@
         zig
         universal-ctags
         sqlite
-      ] ++ [ nh nix-search-cli ];
+      ]
+      ++ [
+        nh
+        nix-search-cli
+      ];
 
-    sessionVariables = { GTK_THEME = "Catppuccin-Mocha-Standard-Mauve-Dark"; };
+    sessionVariables = {
+      GTK_THEME = "Catppuccin-Mocha-Standard-Mauve-Dark";
+    };
 
     pointerCursor = {
       gtk.enable = true;
@@ -111,50 +136,55 @@
 
   fonts.fontconfig.enable = true;
 
-  xdg = {
-    enable = true;
-    portal = {
-      # enable = true;
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-hyprland
-        xdg-desktop-portal-wlr
-      ];
+  xdg.portal =
+    let
+      cfg = config.wayland.windowManager.hyprland;
+    in
+    {
+      enable = true;
+      extraPortals = [ hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland ];
+      configPackages = lib.mkDefault [ cfg.finalPackage ];
     };
-  };
+
+  # xdg = {
+  #   portal = {
+  #     enable = true;
+  #     xdgOpenUsePortal = true;
+  #     extraPortals = with pkgs; [
+  #       xdg-desktop-portal-gtk
+  #       xdg-desktop-portal-wlr
+  #       xdg-desktop-portal-hyprland
+  #     ];
+  #     wlr.enable = true;
+  #   };
+  # };
 
   gtk = {
     enable = true;
     iconTheme = {
-      name = "Papirus-Dark";
-      package = pkgs.papirus-icon-theme;
+      name = "rose-pine";
+      package = pkgs.rose-pine-icon-theme;
     };
     cursorTheme = {
-      name = "Bibata-Modern-Ice";
-      package = pkgs.bibata-cursors;
+      name = "rose-pine";
+      package = pkgs.rose-pine-cursor;
     };
     theme = {
-      name = "Catppuccin-Mocha-Standard-Mauve-Dark";
-      package = pkgs.catppuccin-gtk.override {
-        accents = [ "mauve" ];
-        size = "standard";
-        tweaks = [ "black" ];
-        variant = "mocha";
-      };
+      name = "rose-pine";
+      package = pkgs.rose-pine-gtk-theme;
     };
     gtk3.extraConfig = {
-      Settings = ''
-        gtk-application-prefer-dark-theme=1
-      '';
+      gtk-application-prefer-dark-theme = 1;
     };
 
     gtk4.extraConfig = {
-      Settings = ''
-        gtk-application-prefer-dark-theme=1
-      '';
+      gtk-application-prefer-dark-theme = 1;
     };
   };
   programs = {
-    home-manager = { enable = true; };
+    home-manager = {
+      enable = true;
+    };
 
     direnv = {
       enable = true;
@@ -166,8 +196,14 @@
       enable = true;
       settings = {
         import = [ "${config.xdg.configHome}/alacritty/rose-pine.toml" ];
-        env = { TERM = "xterm-256color"; };
-        font = { normal = { family = "Cascadia Code"; }; };
+        env = {
+          TERM = "xterm-256color";
+        };
+        font = {
+          normal = {
+            family = "Cascadia Code";
+          };
+        };
       };
     };
 
@@ -187,55 +223,19 @@
 
   };
 
-  services = {
-    ssh-agent = { enable = true; };
-    # hypridle = {
-    #   enable = true;
-    #   settings = {
-    #
-    #     general = {
-    #       "lock_cmd" = "pidof hyprlock || hyprlock";
-    #       "before_sleep_cmd" = "loginctl lock-session";
-    #       "after_sleep_cmd" = "hyprctl dispatch dpms on";
-    #     };
-    #
-    #     listener = [
-    #       {
-    #         "timeout" = "150";
-    #         "on-timeout" = "brightnessctl -s set 10";
-    #         "on-resume" = "brightnessctl -r";
-    #       }
-    #       # {
-    #       #   "timeout" = "150";
-    #       #   "on-timeout" = "brightnessctl -sd rgb:kbd_backlight set 0";
-    #       #   "resume" = "brightnessctl -rd rgb:kbd_backlight";
-    #       # }
-    #       {
-    #         "timeout" = "300";
-    #         "on-timeout" = "loginctl lock-session";
-    #       }
-    #       {
-    #         "timeout" = "330";
-    #         "on-timeout" = "hyprctl dispatch dpms off";
-    #         "on-resume" = "hyprctl dispatch dpms on";
-    #       }
-    #
-    #       {
-    #         "timeout" = "1800";
-    #         "on-timeout" = "systemctl suspend";
-    #       }
-    #     ];
-    #   };
-    # };
-  };
+  # services = {
+  #   ssh-agent = { enable = true; };
+  # };
 
   wayland.windowManager.hyprland = {
+    # package = hyprland;
     enable = true;
+    # xwayland.enable = true;
 
     settings = {
       "monitor" = [
-        "DP-5,3840x2160@60,0x0,2,transform,3"
-        "DP-4,3440x1440@60,1080x480,1"
+        "desc:Lenovo Group Limited LEN T27p-10 0x56594C30,3840x2160@60,0x0,2,transform,3"
+        "desc:AOC U34G2G4R3 0x000009CF,3440x1440@60,1080x480,1"
         "eDP-1,1920x1080@60,4520x1440,1"
       ];
       "$mod" = "SUPER";
@@ -243,10 +243,13 @@
       "$lock" = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd Hyprland";
 
       exec-once = [
-        "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "hypridle"
       ];
-      exec = [ "alacritty" "vivaldi" ];
+      exec = [
+        "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+        "alacritty"
+        "vivaldi"
+      ];
 
       ## name: Rosé Pine
       ## author: jishnurajendran
@@ -268,7 +271,10 @@
       "$highlightMed" = "0xff403d52";
       "$highlightHigh" = "0xff524f67";
 
-      bindm = [ "$mod, mouse:272, movewindow" "$mod, mouse:273, resizewindow" ];
+      bindm = [
+        "$mod, mouse:272, movewindow"
+        "$mod, mouse:273, resizewindow"
+      ];
 
       bind = [
         "$mod, d, exec, tofi-drun | xargs hyprctl dispatch exec --"
@@ -321,7 +327,9 @@
         "col.inactive_border" = "$muted";
       };
 
-      animations = { "enabled" = "no"; };
+      animations = {
+        "enabled" = "no";
+      };
 
       misc = {
         "disable_hyprland_logo" = "true";
@@ -331,27 +339,6 @@
         "key_press_enables_dpms" = "true";
         "mouse_move_enables_dpms" = "true";
       };
-
-      # listener = {
-      #     "timeout" = [ 
-      #       "150" 
-      #       "300"
-      #       "330"
-      #       "1800"
-      #     ];
-      #     "on-timeout" = [ 
-      #       "brightnessctl -s set 10"
-      #       "loginctl lock-session"
-      #       "hyprctl dispatch dpms off"
-      #       "systemctl suspend"
-      #     ];
-      #     "on-resume" = [ 
-      #       "brightnessctl -r"
-      #       ""
-      #       "hyprctl dispatch dpms on"
-      #       ""
-      #     ];
-      # };
     };
   };
 }

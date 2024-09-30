@@ -30,7 +30,11 @@
 
     nix-gc-env.url = "github:Julow/nix-gc-env";
 
-    hyprland.url = "github:hyprwm/Hyprland";
+    hyprland = { 
+      url = "https://github.com/hyprwm/Hyprland.git?ref=v.43&submodules=1";
+      type = "git";
+      submodules = true;
+    };
 
   };
 
@@ -70,8 +74,9 @@
         };
       };
 
-      overlays =
-        [ (final: prev: { neovim = final.callPackage inputs.my-nvim { }; }) ];
+      overlays = [];
+
+        # [ (final: prev: { neovim = final.callPackage inputs.my-nvim { }; }) ];
 
       pkgs = import nixpkgs { inherit system config overlays; };
 
@@ -91,7 +96,7 @@
 
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
-          packages = with pkgs; [ nushell fnlfmt fennel-ls nixfmt nil ];
+          packages = with pkgs; [ nushell fnlfmt fennel-ls nixfmt-rfc-style nil ];
         };
       });
 
